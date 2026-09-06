@@ -129,6 +129,12 @@ async def assess(
     except NotImplementedError as exc:
         raise HTTPException(501, str(exc)) from exc
 
+    # normalize espeak-version token drift (e.g. model sʲ ≈ G2P s + ʲ)
+    expanded: list[str] = []
+    for token in recognized:
+        expanded.extend(target_lang.recognized_aliases.get(token, [token]))
+    recognized = expanded
+
     if not recognized:
         return {
             "recognized_ipa": [],

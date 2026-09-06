@@ -74,7 +74,10 @@ cd backend && .venv/bin/python -m pytest tests/ -q
   an espeak voice, a phoneme inventory, how each IPA sound is written natively
   (`orthography`), preferred `substitutions` for foreign sounds,
   `minor_foreign` sounds (foreign-but-equivalent, e.g. schwa ≈ /ɐ/ in
-  Portuguese) and `drill_words` for training examples.
+  Portuguese), `foreign_display` for multi-letter renderings of foreign
+  sounds (en eɪ → ru "эй"), `recognized_aliases` to normalize wav2vec2/espeak
+  token drift, and `drill_words` for training examples. Ships with:
+  English (US), Portuguese (BR), Spanish, German, French, Italian, Russian.
 - **Approximation** (`app/core/approx.py`): target IPA tokens are checked
   against the learner's inventory; native sounds render in their native
   spelling, foreign sounds are substituted with the closest native sound
@@ -97,7 +100,11 @@ cd backend && .venv/bin/python -m scripts.probe_espeak fr-fr
 
 Copy an existing YAML as a template, fill in `inventory`/`orthography` from
 the probe output (curate the interesting ones), add `tts_voice` (edge-tts
-voice name) and you're done — any pair with any other language works.
+voice name) and you're done — any pair with any other language works. See
+`data/languages/ru.yaml` for the conventions to watch for: espeak marks
+stress differently per language (`"`/`^` in Russian), emits palatalization
+as a standalone `ʲ` token, and the wav2vec2 model may emit variant tokens
+(handled via `recognized_aliases`).
 
 ### Hybrid scoring engine
 

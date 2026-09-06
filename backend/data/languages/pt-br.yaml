@@ -90,6 +90,16 @@ substitutions:
   õ: [õ, o]
   ĩ: [ĩ, i]
   ẽ: [ẽ, e]
+  # Russian
+  ɭ: [l, w]
+  ʲ: [j, i]
+  ʑ: [ʃ, ʒ]
+  ɑ: [a]
+  ʌ: [ɐ, a]
+  ts: [tʃ, s]
+  y: [i]
+  ɪ: [i]
+  ɨ: [i]
 
 # Words for pronunciation drills, keyed by the sound they contain.
 drill_words:

@@ -43,6 +43,14 @@ class Language:
     # Foreign sounds that are effectively present in the language under
     # another guise (e.g. schwa ≈ /ɐ/ in Brazilian Portuguese).
     minor_foreign: list[str] = field(default_factory=list)
+    # How to spell foreign sounds natively when a single substitute sound
+    # isn't enough (en eɪ → ru "эй", en ŋ → ru "нг"); takes precedence over
+    # the substitute's orthography for display.
+    foreign_display: dict[str, str] = field(default_factory=dict)
+    # Model-output tokens that mean the same sound as a G2P token but differ
+    # by espeak-version convention (model ɐ ≈ G2P a, attached sʲ ≈ s + ʲ).
+    # Applied to recognized sequences before alignment.
+    recognized_aliases: dict[str, list[str]] = field(default_factory=dict)
 
     @property
     def inventory(self) -> set[str]:
@@ -53,6 +61,8 @@ class Language:
         the language does not have it (e.g. θ → 't' for a Portuguese speaker)."""
         if ipa in self.orthography:
             return self.orthography[ipa]
+        if ipa in self.foreign_display:
+            return self.foreign_display[ipa]
         if _depth < 3 and ipa in self.substitutions:
             for candidate in self.substitutions[ipa]:
                 if candidate in self.inventory:
@@ -138,6 +148,13 @@ def segment_distance(a: str, b: str) -> float:
     """
     if a == b:
         return 0.0
+    # Palatalization ʲ is not in panphon; hand-distance it against the
+    # palatal glide and the vowel it colors.
+    pair = frozenset((a, b))
+    if pair == frozenset(("ʲ", "j")):
+        return 0.25
+    if pair == frozenset(("ʲ", "i")):
+        return 0.5
     sa, sb = _subsegments(a), _subsegments(b)
     if len(sa) == 1 and len(sb) == 1:
         return _seg_pair_distance(sa[0], sb[0])
@@ -179,6 +196,8 @@ def load_language(code: str) -> Language:
         substitutions={k: list(v) for k, v in raw.get("substitutions", {}).items()},
         drill_words={k: list(v) for k, v in raw.get("drill_words", {}).items()},
         minor_foreign=list(raw.get("minor_foreign", [])),
+        foreign_display=dict(raw.get("foreign_display", {})),
+        recognized_aliases={k: list(v) for k, v in raw.get("recognized_aliases", {}).items()},
     )
 
 

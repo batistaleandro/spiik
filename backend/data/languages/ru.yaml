@@ -1,0 +1,172 @@
+# Russian — espeak ru conventions
+# espeak emits palatalization as a standalone ʲ token (n ʲ i = [nʲi] = "ни"),
+# the dark л as ɭ, ы as y, reduced а/о as ʌ, and stress as " (primary) / ^ (secondary).
+code: ru
+name: Russian
+espeak_voice: ru
+tts_voice: ru-RU-SvetlanaNeural
+
+consonants: [p, b, t, d, k, ɡ, f, v, s, z, ʃ, ʒ, ʑ, tʃ, ts, x, m, n, r, l, ɭ, j, ʲ]
+vowels: [i, ɪ, e, ɛ, a, ɑ, ʌ, o, u, y]
+
+# How Russian natively writes each of its own sounds.
+orthography:
+  i: и
+  ɪ: и
+  e: е
+  ɛ: э
+  a: а
+  ɑ: а
+  ʌ: а
+  o: о
+  u: у
+  y: ы
+  p: п
+  b: б
+  t: т
+  d: д
+  k: к
+  ɡ: г
+  f: ф
+  v: в
+  s: с
+  z: з
+  ʃ: ш
+  ʒ: ж
+  ʑ: щ
+  tʃ: ч
+  ts: ц
+  x: х
+  m: м
+  n: н
+  r: р
+  l: л
+  ɭ: л
+  j: й
+  ʲ: ""
+
+# Foreign sounds → preferred native substitutes (checked in order).
+substitutions:
+  # English
+  θ: [s, f, t]
+  ð: [d, z]
+  w: [v]
+  ɹ: [r]
+  ɾ: [r]
+  ɚ: [r, ʌ]
+  ɜː: [o, r]
+  ə: [ʌ, e]
+  æ: [ɛ, a]
+  ɪ: [ɪ]
+  ʊ: [u]
+  ɔː: [o]
+  ɑː: [ɑ]
+  dʒ: [tʃ, ʒ]
+  h: [x, ɡ]
+  ŋ: [n]
+  ɔɪ: [oj]
+  # Portuguese
+  ɐ: [a]
+  ɐ̃: [a]
+  ɐ̃ʊ̃: [a]
+  ẽ: [e]
+  ĩ: [i]
+  õ: [o]
+  ũ: [u]
+  ɔ̃: [o]
+  ɑ̃: [ɑ]
+  ɛ̃: [ɛ]
+  œ̃: [ɛ]
+  ʎ: [l, j]
+  ɲ: [n, j]
+  ʁ: [r, x]
+  ʀ: [r, x]
+  # French / German
+  ø: [e, o]
+  œ: [ɛ, o]
+  øː: [e, o]
+  yː: [i, u]
+  ʏ: [i]
+  ç: [x, ʃ]
+  pf: [p, f]
+  dz: [z, ts]
+  ɥ: [j]
+  ɜ: [ʌ]
+  ɞ: [ʌ]
+  ʉ: [u]
+  ɤ: [o]
+  ɕ: [ʃ, ʑ]
+  β: [b]
+  ɣ: [ɡ]
+  ɖ: [d]
+  ʈ: [t]
+
+# Sounds that don't exist in Russian but reduce gracefully to one native sound.
+minor_foreign: [ɪ, e, ɛ]
+
+# wav2vec2/espeak-version token drift: what the model emits vs what espeak-ng
+# G2P produces for the same sound. Expanded before alignment.
+recognized_aliases:
+  ɐ: [a]
+  ɨ: [y]
+  ʂ: [ʃ]
+  ɕ: [ʑ]
+  pʲ: [p, ʲ]
+  bʲ: [b, ʲ]
+  tʲ: [t, ʲ]
+  dʲ: [d, ʲ]
+  kʲ: [k, ʲ]
+  ɡʲ: [ɡ, ʲ]
+  fʲ: [f, ʲ]
+  vʲ: [v, ʲ]
+  sʲ: [s, ʲ]
+  zʲ: [z, ʲ]
+  mʲ: [m, ʲ]
+  nʲ: [n, ʲ]
+  rʲ: [r, ʲ]
+  lʲ: [l, ʲ]
+  ɭʲ: [ɭ, ʲ]
+  xʲ: [x, ʲ]
+
+# How foreign sounds are written natively when one substitute letter isn't
+# enough (diphthongs, affricates, nasal/eng combos).
+foreign_display:
+  eɪ: эй
+  aɪ: ай
+  aʊ: ау
+  oʊ: оу
+  əʊ: ой
+  ɔɪ: ой
+  iː: и
+  uː: у
+  dʒ: дж
+  ŋ: нг
+  ɐ̃ʊ̃: ау
+  ɐ̃: ан
+  õ: он
+  ɔ̃: он
+  ẽ: ен
+  ĩ: ин
+  ũ: ун
+  ɑ̃: ан
+  ɛ̃: эн
+  œ̃: эн
+  ʎ: ль
+  ɲ: нь
+  ɚ: ер
+  ɜː: о
+
+# Words for pronunciation drills, keyed by the sound they contain.
+drill_words:
+  ɭ: [стол, мало, луна]
+  r: [река, работа, три]
+  ts: [цвет, солнце, конец]
+  tʃ: [чай, час, очки]
+  ʑ: [щенок, площадь, борщ]
+  x: [хорошо, хлеб, химия]
+  y: [мы, сын, ты]
+  ʲ: [тётя, дядя, соль]
+  ʃ: [школа, душ, машина]
+  ʒ: [жизнь, журнал, важный]
+  ʌ: [вода, молоко, город]
+  ɑ: [мама, папа, там]

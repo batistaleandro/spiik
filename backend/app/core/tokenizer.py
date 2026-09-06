@@ -15,6 +15,9 @@ from dataclasses import dataclass, field
 
 PRIMARY_STRESS = "ˈ"
 SECONDARY_STRESS = "ˌ"
+# espeak's Russian voice marks stress with ASCII " and ^.
+EXTRA_PRIMARY_STRESS = '"'
+EXTRA_SECONDARY_STRESS = "^"
 
 # Combining diacritics that stay attached to the base phoneme.
 _COMBINING = set("̡̢̥̪̬̰̼̜̞̘̙͈̃̈̽̆̆̎̂̌ͅ")
@@ -96,8 +99,8 @@ def tokenize_ipa(text: str, inventory: list[str] | None = None) -> list[Token]:
     i = 0
     while i < len(text):
         ch = text[i]
-        if ch in (PRIMARY_STRESS, SECONDARY_STRESS):
-            pending_stress = 1 if ch == PRIMARY_STRESS else 2
+        if ch in (PRIMARY_STRESS, SECONDARY_STRESS, EXTRA_PRIMARY_STRESS, EXTRA_SECONDARY_STRESS):
+            pending_stress = 1 if ch in (PRIMARY_STRESS, EXTRA_PRIMARY_STRESS) else 2
             i += 1
             continue
         if ch.isspace():

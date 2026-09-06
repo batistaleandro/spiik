@@ -108,7 +108,9 @@ def _phoneme_out(token: Token, native: Language) -> PhonemeOut:
             stress=token.stress,
         )
     substitute, distance = native.closest_sound(token.ipa)
-    sub_display = native.orthography.get(substitute or "", token.ipa)
+    sub_display = native.foreign_display.get(token.ipa) or native.orthography.get(
+        substitute or "", token.ipa
+    )
     return PhonemeOut(
         ipa=token.ipa,
         status="foreign",

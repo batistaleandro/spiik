@@ -125,7 +125,7 @@ def test_describe_sound():
 
 
 def test_all_language_files_load():
-    codes = ["en-us", "pt-br", "es", "de", "fr-fr", "it"]
+    codes = ["en-us", "pt-br", "es", "de", "fr-fr", "it", "ru"]
     for code in codes:
         lang = load_language(code)
         assert lang.inventory, code
@@ -133,3 +133,45 @@ def test_all_language_files_load():
         # every inventory sound should have a native spelling
         for sound in lang.inventory:
             assert sound in lang.orthography, f"{code}: {sound} has no orthography"
+
+
+def test_approximate_english_for_russian_learners(g2p, langs):
+    en, _ = langs
+    ru = load_language("ru")
+    # Russians render these words exactly this way when writing English by ear
+    cases = {
+        "think": "сингк",
+        "day": "дэй",
+        "house": "хаус",
+        "king": "кинг",
+        "jazz": "джэз",
+        "yes": "йэс",
+    }
+    for word, expected in cases.items():
+        result = approximate(g2p.phonemize(word, en), en, ru)
+        assert result.text == expected, f"{word}: {result.text!r} != {expected!r}"
+    # θ and w are the classic trouble sounds for Russian speakers
+    think_missing = {m.ipa for m in approximate(g2p.phonemize("think", en), en, ru).missing_sounds}
+    assert "θ" in think_missing
+    world_missing = {m.ipa: m for m in approximate(g2p.phonemize("world", en), en, ru).missing_sounds}
+    assert "w" in world_missing and world_missing["w"].substitute == "v"
+
+
+def test_approximate_russian_for_english_learners(g2p, langs):
+    _, _ = langs
+    en = load_language("en-us")
+    ru = load_language("ru")
+    result = approximate(g2p.phonemize("привет", ru), ru, en)
+    assert result.text == "pryi-vyet"
+    missing = {m.ipa for m in result.missing_sounds}
+    # the trill and palatalization are the sounds English speakers must train
+    assert "r" in missing and "ʲ" in missing
+
+
+def test_russian_stress_marks_tokenize(g2p, langs):
+    ru = load_language("ru")
+    tokens = g2p.phonemize("вода", ru)
+    # espeak marks ɑ (stressed а) with "; no raw " or ^ tokens may leak through
+    assert all(t.ipa not in ('"', "^") for t in tokens)
+    assert [t.ipa for t in tokens] == ["v", "ʌ", "d", "ɑ"]
+    assert tokens[-1].stress == 1

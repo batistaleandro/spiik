@@ -51,6 +51,13 @@ compleanno colazione martedì mercoledì giovedì sabato febbraio agosto ottobre
 fratello madre padre sorella figli gente commercio scienza storia lavoro
 pane latte libro finestra pioggia vento sole luna stella mare fiume montagna
 """,
+    "ru": """создание ярмарка мысль начинать образование вода огонь земля воздух свет ночь
+город дом школа учитель ученик друг семья музыка вопрос ответ
+день рождения вторник среда четверг суббота февраль август октябрь
+брат мать отец сестра дети люди бизнес наука история работа
+хлеб молоко книга окно дождь ветер солнце луна звезда море река гора
+думать сейчас очень человек язык человек большой маленький новый
+""",
 }
 
 
