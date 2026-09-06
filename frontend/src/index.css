@@ -51,14 +51,23 @@ h1 {
 }
 
 .controls {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: auto auto minmax(260px, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: end;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .word-field {
+    grid-column: 1 / -1;
+  }
 }
 
 .field {
@@ -67,6 +76,7 @@ h1 {
   gap: 0.3rem;
   font-size: 0.8rem;
   color: var(--text-dim);
+  min-width: 0;
 }
 
 .field select,
@@ -75,9 +85,11 @@ h1 {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 0.6rem 0.75rem;
+  padding: 0 0.75rem;
   font-size: 1rem;
+  height: 42px;
   outline: none;
+  width: 100%;
 }
 
 .field select:focus,
@@ -86,8 +98,7 @@ h1 {
 }
 
 .word-field {
-  flex: 1;
-  min-width: 240px;
+  min-width: 0;
 }
 
 .mode-toggle {
@@ -96,6 +107,7 @@ h1 {
   gap: 0.35rem;
   font-size: 0.78rem;
   color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .mode-toggle button {
@@ -106,6 +118,7 @@ h1 {
   font-weight: 500;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .mode-toggle button.active {
@@ -121,6 +134,13 @@ h1 {
 
 .word-input-row input {
   flex: 1;
+  min-width: 0;
+}
+
+.word-input-row button {
+  height: 42px;
+  padding: 0 1.1rem;
+  flex-shrink: 0;
 }
 
 button {
@@ -132,6 +152,7 @@ button {
   background: var(--accent);
   color: #0b0e1d;
   font-weight: 600;
+  white-space: nowrap;
   transition: filter 0.15s ease;
 }
 
