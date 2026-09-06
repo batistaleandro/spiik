@@ -160,6 +160,16 @@ button:disabled {
   font-size: 1.05rem;
 }
 
+.translation {
+  background: rgba(108, 140, 255, 0.14);
+  border: 1px solid rgba(108, 140, 255, 0.45);
+  color: var(--accent);
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .approx {
   display: flex;
   flex-wrap: wrap;

@@ -18,6 +18,7 @@ from app.core.drills import build_drill
 from app.core.g2p import get_g2p
 from app.core.languages import load_language, list_languages
 from app.engines.base import get_engine
+from app.translate import translate_word
 from app.tts import synthesize
 
 app = FastAPI(title="spiik", description="Pronunciation training via IPA approximation")
@@ -87,10 +88,16 @@ def analyze(req: AnalyzeRequest):
     if current_word:
         words_out.append("-".join(current_word))
 
+    try:
+        translated = translate_word(req.text, target, native)
+    except Exception:
+        translated = None
+
     return {
         "text": req.text,
         "native": {"code": native.code, "name": native.name},
         "target": {"code": target.code, "name": target.name},
+        "translated": translated,
         "approximation": " ".join(words_out),
         "chunks": chunks,
         "missing_sounds": list(missing_sounds.values()),

@@ -2,6 +2,9 @@
 code: en-us
 name: English (US)
 espeak_voice: en-us
+translate:
+  google: en
+  mymemory: en-US
 tts_voice: en-US-AriaNeural
 
 consonants: [p, b, t, d, k, ɡ, tʃ, dʒ, f, v, θ, ð, s, z, ʃ, ʒ, h, m, n, ŋ, l, ɹ, ɾ, j, w]

@@ -51,6 +51,8 @@ class Language:
     # by espeak-version convention (model ɐ ≈ G2P a, attached sʲ ≈ s + ʲ).
     # Applied to recognized sequences before alignment.
     recognized_aliases: dict[str, list[str]] = field(default_factory=dict)
+    # Translation provider codes: {"google": "en", "mymemory": "en-US"}.
+    translate: dict[str, str] = field(default_factory=dict)
 
     @property
     def inventory(self) -> set[str]:
@@ -198,6 +200,7 @@ def load_language(code: str) -> Language:
         minor_foreign=list(raw.get("minor_foreign", [])),
         foreign_display=dict(raw.get("foreign_display", {})),
         recognized_aliases={k: list(v) for k, v in raw.get("recognized_aliases", {}).items()},
+        translate=dict(raw.get("translate", {})),
     )
 
 

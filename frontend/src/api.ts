@@ -33,6 +33,7 @@ export interface AnalyzeResult {
   text: string;
   native: { code: string; name: string };
   target: { code: string; name: string };
+  translated: string | null;
   approximation: string;
   chunks: Chunk[];
   missing_sounds: MissingSound[];

@@ -2,6 +2,9 @@
 code: pt-br
 name: Portuguese (Brazil)
 espeak_voice: pt-br
+translate:
+  google: pt
+  mymemory: pt-BR
 tts_voice: pt-BR-FranciscaNeural
 
 consonants: [p, b, t, d, k, ɡ, tʃ, dʒ, f, v, s, z, ʃ, ʒ, m, n, ɲ, ŋ, l, ʎ, ɾ, r, ɹ, x, j, w]

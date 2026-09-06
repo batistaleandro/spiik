@@ -4,6 +4,9 @@
 code: ru
 name: Russian
 espeak_voice: ru
+translate:
+  google: ru
+  mymemory: ru-RU
 tts_voice: ru-RU-SvetlanaNeural
 
 consonants: [p, b, t, d, k, ɡ, f, v, s, z, ʃ, ʒ, ʑ, tʃ, ts, x, m, n, r, l, ɭ, j, ʲ]

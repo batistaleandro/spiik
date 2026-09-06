@@ -8,7 +8,7 @@ from app.core.align import align, score, verdicts
 from app.core.approx import approximate
 from app.core.drills import describe_sound
 from app.core.g2p import get_g2p
-from app.core.languages import load_language
+from app.core.languages import list_languages, load_language
 from app.core.tokenizer import tokenize_ipa
 
 
@@ -175,3 +175,40 @@ def test_russian_stress_marks_tokenize(g2p, langs):
     assert all(t.ipa not in ('"', "^") for t in tokens)
     assert [t.ipa for t in tokens] == ["v", "ʌ", "d", "ɑ"]
     assert tokens[-1].stress == 1
+
+
+def test_translate_word_uses_provider_chain(monkeypatch, langs):
+    import app.translate as tr
+
+    en, pt = load_language("en-us"), load_language("pt-br")
+    # first provider fails, second supplies the translation
+    monkeypatch.setattr(tr, "_run_provider", lambda name, text, s, d: None if name == "google" else "Criação")
+    tr._cached.cache_clear()
+    assert tr.translate_word("creation", en, pt) == "Criação"
+
+
+def test_translate_word_returns_none_when_all_providers_fail(monkeypatch, langs):
+    import app.translate as tr
+
+    en, ru = langs
+    monkeypatch.setattr(tr, "_run_provider", lambda name, text, s, d: None)
+    tr._cached.cache_clear()
+    assert tr.translate_word("zzzq", en, ru) is None
+    tr._cached.cache_clear()
+
+
+def test_translate_word_strips_punctuation_artifacts(langs):
+    import app.translate as tr
+
+    en, ru = langs
+    assert tr.clean_translation("мир,", "world") == "мир"
+    assert tr.clean_translation("Спасибо.", "thank you") == "Спасибо"
+    # an echo of the input is not a translation
+    assert tr.clean_translation("world", "world") is None
+    assert tr.clean_translation(None, "world") is None
+
+
+def test_every_language_has_translation_codes():
+    for lang in list_languages():
+        codes = lang.translate
+        assert "google" in codes and "mymemory" in codes, lang.code

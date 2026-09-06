@@ -2,6 +2,9 @@
 code: fr-fr
 name: French (France)
 espeak_voice: fr-fr
+translate:
+  google: fr
+  mymemory: fr-FR
 tts_voice: fr-FR-DeniseNeural
 
 consonants: [p, b, t, d, k, ɡ, f, v, s, z, ʃ, ʒ, m, n, ɲ, l, ʁ, j, w]

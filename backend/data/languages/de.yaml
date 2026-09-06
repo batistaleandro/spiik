@@ -2,6 +2,9 @@
 code: de
 name: German
 espeak_voice: de
+translate:
+  google: de
+  mymemory: de-DE
 tts_voice: de-DE-KatjaNeural
 
 consonants: [p, b, t, d, k, ɡ, pf, ts, f, v, s, z, ʃ, ʒ, ç, x, h, m, n, ŋ, l, ɾ, r, j]

@@ -5,10 +5,12 @@ compares the **International Phonetic Alphabet (IPA)** of both languages to:
 
 1. **Write foreign words the way they sound to you** — `creation` → `cri-ei-chan`
    for a Brazilian Portuguese speaker; `think` → `sinc`.
-2. **Listen to your attempt and score every phoneme** — a wav2vec2 model
+2. **Show what the word means** — a translation into the learner's language
+   (free providers: Google with MyMemory fallback, best-effort).
+3. **Listen to your attempt and score every phoneme** — a wav2vec2 model
    recognizes the IPA sounds you actually produced, and a feature-weighted
    alignment against the expected IPA marks each sound correct / close / wrong / missing.
-3. **Train the sounds your language doesn't have** — /θ/ doesn't exist in
+4. **Train the sounds your language doesn't have** — /θ/ doesn't exist in
    Portuguese? Spiik generates a drill card from the phoneme's IPA features
    (place, manner, voicing) with coaching text, minimal-pair examples and audio.
 
@@ -25,6 +27,7 @@ not per-pair tables.
 | Audio→IPA  | `facebook/wav2vec2-lv-60-espeak-cv-ft` (CTC, outputs IPA directly)  |
 | Distances  | `panphon` feature-weighted phoneme distances                        |
 | TTS        | edge-tts (free neural voices) with espeak-ng offline fallback       |
+| Translate  | translate.google.com/m + MyMemory (both free, best-effort)          |
 | Frontend   | Vite + React + TypeScript                                           |
 
 ## Setup

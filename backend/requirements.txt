@@ -4,6 +4,7 @@ phonemizer
 panphon
 pyyaml
 edge-tts
+deep-translator
 torch
 torchaudio
 transformers

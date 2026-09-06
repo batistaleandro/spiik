@@ -352,6 +352,11 @@ export default function App() {
             <div className="word-row">
               <h2 className="word">{analysis.text}</h2>
               <span className="ipa">/ {analysis.expected_ipa.join(" ")} /</span>
+              {analysis.translated && (
+                <span className="translation" title={`in ${analysis.native.name}`}>
+                  {analysis.translated}
+                </span>
+              )}
             </div>
             <div className="approx">
               {analysis.chunks.map((c, i) => (
