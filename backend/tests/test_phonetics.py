@@ -182,7 +182,11 @@ def test_translate_word_uses_provider_chain(monkeypatch, langs):
 
     en, pt = load_language("en-us"), load_language("pt-br")
     # first provider fails, second supplies the translation
-    monkeypatch.setattr(tr, "_run_provider", lambda name, text, s, d: None if name == "google" else "Criação")
+    monkeypatch.setattr(
+        tr,
+        "_run_provider",
+        lambda name, text, s, d, allow_echo=False: None if name == "google" else "Criação",
+    )
     tr._cached.cache_clear()
     assert tr.translate_word("creation", en, pt) == "Criação"
 
@@ -191,7 +195,7 @@ def test_translate_word_returns_none_when_all_providers_fail(monkeypatch, langs)
     import app.translate as tr
 
     en, ru = langs
-    monkeypatch.setattr(tr, "_run_provider", lambda name, text, s, d: None)
+    monkeypatch.setattr(tr, "_run_provider", lambda name, text, s, d, allow_echo=False: None)
     tr._cached.cache_clear()
     assert tr.translate_word("zzzq", en, ru) is None
     tr._cached.cache_clear()

@@ -90,6 +90,30 @@ h1 {
   min-width: 240px;
 }
 
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.mode-toggle button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+}
+
+.mode-toggle button.active {
+  background: rgba(108, 140, 255, 0.16);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .word-input-row {
   display: flex;
   gap: 0.5rem;

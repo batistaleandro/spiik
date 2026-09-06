@@ -18,7 +18,7 @@ from app.core.drills import build_drill
 from app.core.g2p import get_g2p
 from app.core.languages import load_language, list_languages
 from app.engines.base import get_engine
-from app.translate import translate_word
+from app.translate import translate_for_practice, translate_word
 from app.tts import synthesize
 
 app = FastAPI(title="spiik", description="Pronunciation training via IPA approximation")
@@ -40,6 +40,11 @@ class AnalyzeRequest(BaseModel):
     native: str = Field(description="learner's language code, e.g. pt-br")
     target: str = Field(description="language being learned, e.g. en-us")
     text: str = Field(description="word or phrase to practice")
+    input_lang: str = Field(
+        default="target",
+        description="which language `text` is in: 'target' (default) or 'native' — "
+        "when 'native', text is translated into the target language first",
+    )
 
 
 @app.get("/api/languages")
@@ -52,16 +57,42 @@ def get_languages():
 
 @app.post("/api/analyze")
 def analyze(req: AnalyzeRequest):
-    """Word/phrase → IPA + native-language approximation + missing sounds."""
+    """Word/phrase → IPA + native-language approximation + missing sounds.
+
+    With input_lang='native', `text` is translated from the learner's
+    language into the target language first; the response carries both the
+    original query and the practice word.
+    """
     try:
         target = load_language(req.target)
         native = load_language(req.native)
     except KeyError as exc:
         raise HTTPException(404, str(exc)) from exc
     g2p = get_g2p()
-    word_tokens = g2p.words(req.text, target)
+
+    query = req.text.strip()
+    if req.input_lang == "native":
+        try:
+            practice_text = translate_for_practice(query, native, target)
+        except Exception:
+            practice_text = None
+        if not practice_text:
+            raise HTTPException(
+                422,
+                f"could not translate “{query}” into {target.name} — "
+                f"try typing the word in {target.name} directly",
+            )
+        translated = query  # the chip shows the word the user typed
+    else:
+        practice_text = query
+        try:
+            translated = translate_word(practice_text, target, native)
+        except Exception:
+            translated = None
+
+    word_tokens = g2p.words(practice_text, target)
     if not word_tokens or not any(word_tokens):
-        raise HTTPException(422, f"could not phonemize: {req.text!r}")
+        raise HTTPException(422, f"could not phonemize: {practice_text!r}")
 
     chunks: list[dict] = []
     missing_sounds: dict[str, dict] = {}
@@ -88,13 +119,10 @@ def analyze(req: AnalyzeRequest):
     if current_word:
         words_out.append("-".join(current_word))
 
-    try:
-        translated = translate_word(req.text, target, native)
-    except Exception:
-        translated = None
-
     return {
-        "text": req.text,
+        "text": practice_text,
+        "query": query,
+        "input_lang": req.input_lang,
         "native": {"code": native.code, "name": native.name},
         "target": {"code": target.code, "name": target.name},
         "translated": translated,

@@ -188,6 +188,7 @@ export default function App() {
   const [languages, setLanguages] = useState<LanguageInfo[]>([]);
   const [native, setNative] = useState(DEFAULT_NATIVE);
   const [target, setTarget] = useState(DEFAULT_TARGET);
+  const [inputLang, setInputLang] = useState<"target" | "native">("target");
   const [word, setWord] = useState("creation");
   const [analysis, setAnalysis] = useState<AnalyzeResult | null>(null);
   const [feedback, setFeedback] = useState<AssessResult | null>(null);
@@ -211,14 +212,15 @@ export default function App() {
   }, []);
 
   const doAnalyze = useCallback(
-    async (text?: string) => {
+    async (text?: string, langOverride?: "target" | "native") => {
       const query = (text ?? word).trim();
       if (!query) return;
+      const lang = langOverride ?? inputLang;
       setLoading(true);
       setError("");
       setFeedback(null);
       try {
-        const result = await analyze(native, target, query);
+        const result = await analyze(native, target, query, lang);
         setAnalysis(result);
         if (text) setWord(text);
       } catch (e) {
@@ -227,18 +229,20 @@ export default function App() {
         setLoading(false);
       }
     },
-    [word, native, target]
+    [word, native, target, inputLang]
   );
 
   const doListen = useCallback(async () => {
-    if (!word.trim()) return;
+    // speak the practice word (analysis.text), not the raw query
+    const toSpeak = (analysis?.text ?? word).trim();
+    if (!toSpeak) return;
     try {
-      const url = await tts(word.trim(), target);
+      const url = await tts(toSpeak, target);
       new Audio(url).play();
     } catch {
       setError("could not generate audio — check your connection");
     }
-  }, [word, target]);
+  }, [word, analysis, target]);
 
   const stopRecording = useCallback(() => {
     recorderRef.current?.stop();
@@ -290,8 +294,10 @@ export default function App() {
 
   const practiceWord = useCallback(
     (w: string) => {
+      // drill examples are always target-language words
       setWord(w);
-      void doAnalyze(w);
+      setInputLang("target");
+      void doAnalyze(w, "target");
     },
     [doAnalyze]
   );
@@ -329,12 +335,34 @@ export default function App() {
             void doAnalyze();
           }}
         >
-          <span>Word</span>
+          <div className="mode-toggle">
+            <span>word in</span>
+            <button
+              type="button"
+              className={inputLang === "target" ? "active" : ""}
+              onClick={() => setInputLang("target")}
+            >
+              {languages.find((l) => l.code === target)?.name ?? "target"}
+            </button>
+            <button
+              type="button"
+              className={inputLang === "native" ? "active" : ""}
+              onClick={() => setInputLang("native")}
+            >
+              {languages.find((l) => l.code === native)?.name ?? "native"}
+            </button>
+          </div>
           <div className="word-input-row">
             <input
               value={word}
               onChange={(e) => setWord(e.target.value)}
-              placeholder="type a word to pronounce"
+              placeholder={
+                inputLang === "native"
+                  ? `type a word in your language, get it in ${
+                      languages.find((l) => l.code === target)?.name ?? "the target language"
+                    }`
+                  : "type a word to pronounce"
+              }
               autoFocus
             />
             <button type="submit" disabled={loading}>
@@ -353,7 +381,15 @@ export default function App() {
               <h2 className="word">{analysis.text}</h2>
               <span className="ipa">/ {analysis.expected_ipa.join(" ")} /</span>
               {analysis.translated && (
-                <span className="translation" title={`in ${analysis.native.name}`}>
+                <span
+                  className="translation"
+                  title={
+                    analysis.input_lang === "native"
+                      ? "the word you typed"
+                      : `in ${analysis.native.name}`
+                  }
+                >
+                  {analysis.input_lang === "native" ? "→ " : ""}
                   {analysis.translated}
                 </span>
               )}

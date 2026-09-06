@@ -32,8 +32,32 @@ def translate_word(text: str, source: Language, target: Language) -> str | None:
     return _cached(*key)
 
 
+def translate_for_practice(text: str, source: Language, target: Language) -> str | None:
+    """Translate the learner's own word into the language being practiced.
+
+    Unlike translate_word, an echo (same word in both languages, "hotel" →
+    "hotel") is a valid result, and only the first candidate is kept —
+    "сливки, сливочное масло" gives the practice word "сливки".
+    """
+    key = (
+        text.strip(),
+        source.translate.get("google", source.code),
+        target.translate.get("google", target.code),
+        source.translate.get("mymemory", ""),
+        target.translate.get("mymemory", ""),
+    )
+    return _cached(*key, allow_echo=True)
+
+
 @functools.lru_cache(maxsize=2048)
-def _cached(text: str, google_from: str, google_to: str, my_from: str, my_to: str) -> str | None:
+def _cached(
+    text: str,
+    google_from: str,
+    google_to: str,
+    my_from: str,
+    my_to: str,
+    allow_echo: bool = False,
+) -> str | None:
     providers: list[tuple[str, str, str]] = []
     if google_from and google_to:
         providers.append(("google", google_from, google_to))
@@ -41,13 +65,15 @@ def _cached(text: str, google_from: str, google_to: str, my_from: str, my_to: st
         providers.append(("mymemory", my_from, my_to))
 
     for name, src, dst in providers:
-        result = _run_provider(name, text, src, dst)
+        result = _run_provider(name, text, src, dst, allow_echo=allow_echo)
         if result:
             return result
     return None
 
 
-def _run_provider(name: str, text: str, src: str, dst: str) -> str | None:
+def _run_provider(
+    name: str, text: str, src: str, dst: str, allow_echo: bool = False
+) -> str | None:
     """Run one provider with a hard timeout so /api/analyze never hangs."""
     box: list[str | None] = [None]
 
@@ -65,7 +91,7 @@ def _run_provider(name: str, text: str, src: str, dst: str) -> str | None:
     thread = threading.Thread(target=work, daemon=True)
     thread.start()
     thread.join(_TIMEOUT_S)
-    return clean_translation(box[0], text)
+    return clean_translation(box[0], text, allow_echo=allow_echo, first_only=allow_echo)
 
 
 def _google(text: str, src: str, dst: str) -> str | None:
@@ -80,11 +106,23 @@ def _google(text: str, src: str, dst: str) -> str | None:
     return match.group(1) if match else None
 
 
-def clean_translation(value: str | None, source_text: str) -> str | None:
-    """Providers return noise: trailing punctuation, or an echo of the input."""
+def clean_translation(
+    value: str | None, source_text: str, allow_echo: bool = False, first_only: bool = False
+) -> str | None:
+    """Providers return noise: trailing punctuation, or an echo of the input.
+
+    With first_only, multi-candidate answers ("мир, свет") are cut to the
+    first candidate — used when picking the word to practice.
+    """
     if not value:
         return None
     value = value.strip()
-    if not value or value.lower() == source_text.strip().lower():
+    if not value:
+        return None
+    if first_only:
+        value = re.split(r"[,;/]", value)[0].strip()
+        if not value:
+            return None
+    if not allow_echo and value.lower() == source_text.strip().lower():
         return None
     return _TRAILING_NOISE.sub("", value).strip() or None

@@ -31,6 +31,8 @@ export interface MissingSound {
 
 export interface AnalyzeResult {
   text: string;
+  query: string;
+  input_lang: string;
   native: { code: string; name: string };
   target: { code: string; name: string };
   translated: string | null;
@@ -89,12 +91,13 @@ export async function fetchLanguages(): Promise<LanguageInfo[]> {
 export async function analyze(
   native: string,
   target: string,
-  text: string
+  text: string,
+  inputLang: "target" | "native" = "target"
 ): Promise<AnalyzeResult> {
   const res = await fetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ native, target, text }),
+    body: JSON.stringify({ native, target, text, input_lang: inputLang }),
   });
   return jsonOrThrow<AnalyzeResult>(res);
 }
