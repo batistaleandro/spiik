@@ -1,0 +1,107 @@
+# Brazilian Portuguese — espeak pt-br conventions
+code: pt-br
+name: Portuguese (Brazil)
+espeak_voice: pt-br
+tts_voice: pt-BR-FranciscaNeural
+
+consonants: [p, b, t, d, k, ɡ, tʃ, dʒ, f, v, s, z, ʃ, ʒ, m, n, ɲ, ŋ, l, ʎ, ɾ, r, ɹ, x, j, w]
+vowels: [i, y, e, ɛ, æ, a, ɐ, ɔ, o, u, ʊ, ɐ̃, ũ, eɪ, aɪ, aʊ, ɔɪ]
+
+# How Brazilian Portuguese natively writes each of its own sounds.
+orthography:
+  i: i
+  y: i
+  e: e
+  ɛ: é
+  æ: e
+  a: a
+  ɐ: a
+  ɔ: ó
+  o: o
+  u: u
+  ʊ: u
+  ɐ̃: ã
+  ũ: u
+  eɪ: ei
+  aɪ: ai
+  aʊ: au
+  ɔɪ: ói
+  p: p
+  b: b
+  t: t
+  d: d
+  k: c
+  ɡ: g
+  tʃ: t
+  dʒ: d
+  f: f
+  v: v
+  s: s
+  z: z
+  ʃ: ch
+  ʒ: j
+  m: m
+  n: n
+  ɲ: nh
+  ŋ: n
+  l: l
+  ʎ: lh
+  ɾ: r
+  r: r
+  ɹ: r
+  x: rr
+  j: i
+  w: u
+
+# Foreign sounds that are effectively present in Brazilian Portuguese under
+# another guise (treated as a minor adjustment, not a "missing" sound).
+minor_foreign: [ə, ɚ]
+
+# Foreign sounds → preferred native substitutes (checked in order).
+substitutions:
+  ð: [d]
+  θ: [t, s]
+  h: [r, ɾ]
+  ə: [ɐ]
+  ɚ: [ɐ]
+  ɜː: [ɔ, ɐ]
+  ʌ: [ɐ, a]
+  ɪ: [i]
+  ʊ: [u]
+  iː: [i]
+  uː: [u]
+  oʊ: [o]
+  əʊ: [o]
+  ɑː: [a]
+  ɔː: [ɔ]
+  æ: [ɛ]
+  ɜ: [ɐ]
+  ɤ: [u]
+  ʉ: [u]
+  ʁ: [r]
+  ʀ: [r]
+  ħ: [r]
+  ç: [ʃ]
+  ɥ: [i]
+  y: [i]
+  ø: [e]
+  œ: [ɛ]
+  β: [b]
+  õ: [õ, o]
+  ĩ: [ĩ, i]
+  ẽ: [ẽ, e]
+
+# Words for pronunciation drills, keyed by the sound they contain.
+drill_words:
+  ʎ: [trabalho, ilha, filho]
+  ɲ: [senhor, manha, ninho]
+  ɐ̃: [mãe, amanhã, irmã]
+  ɐ̃ʊ̃: [pão, criação, coração]
+  x: [carro, terra, cidade]
+  ɾ: [caro, água, amor]
+  ɛ: [café, leite, cedo]
+  ɔ: [avó, escola, óculos]
+  ʒ: [gente, cerveja, jogo]
+  ʃ: [chave, água, escola]
+  tʃ: [tia, noite, bentinho]
+  dʒ: [dia, bom dia, onde]

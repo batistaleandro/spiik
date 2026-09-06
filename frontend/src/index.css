@@ -1,0 +1,436 @@
+:root {
+  --bg: #0f1220;
+  --bg-card: #181c2f;
+  --bg-chip: #232848;
+  --text: #e8eaf6;
+  --text-dim: #9aa0c3;
+  --accent: #6c8cff;
+  --good: #4ade80;
+  --close: #fbbf24;
+  --bad: #f87171;
+  --border: #2c3157;
+  font-family: "Inter", "SF Pro Text", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 50% -10%, #1c2140 0%, var(--bg) 60%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+h1 {
+  font-size: 2.6rem;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.logo-dot {
+  color: var(--accent);
+}
+
+.tagline {
+  color: var(--text-dim);
+  margin: 0.35rem 0 0;
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.field select,
+.word-input-row input {
+  background: var(--bg-chip);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  outline: none;
+}
+
+.field select:focus,
+.word-input-row input:focus {
+  border-color: var(--accent);
+}
+
+.word-field {
+  flex: 1;
+  min-width: 240px;
+}
+
+.word-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.word-input-row input {
+  flex: 1;
+}
+
+button {
+  font: inherit;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+  background: var(--accent);
+  color: #0b0e1d;
+  font-weight: 600;
+  transition: filter 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.error {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: var(--bad);
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.card,
+.word-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+.word-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.word {
+  margin: 0;
+  font-size: 2.2rem;
+  letter-spacing: -0.02em;
+}
+
+.ipa {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+
+.approx {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.1rem 0 0.4rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.chunk {
+  padding: 0.15rem 0.45rem;
+  border-radius: 10px;
+}
+
+.chunk.foreign-major {
+  background: rgba(248, 113, 113, 0.16);
+  color: var(--bad);
+  outline: 1px dashed rgba(248, 113, 113, 0.55);
+}
+
+.chunk.stressed {
+  text-decoration: underline dotted 3px;
+  text-underline-offset: 6px;
+}
+
+.approx-caption {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 0.2rem 0 0;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.badge {
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+}
+
+.badge.major {
+  background: rgba(248, 113, 113, 0.14);
+  color: var(--bad);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+}
+
+.badge.minor {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--close);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.record.recording {
+  background: var(--bad);
+  color: #1c0b0b;
+  animation: pulse 1.2s infinite;
+}
+
+.record.scoring,
+.record.recording {
+  cursor: wait;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.recording-note {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.feedback {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.9rem 1.3rem;
+  border-radius: 16px;
+  min-width: 120px;
+}
+
+.score.great {
+  background: rgba(74, 222, 128, 0.12);
+  color: var(--good);
+}
+
+.score.ok {
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--close);
+}
+
+.score.rough {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--bad);
+}
+
+.score-num {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.verdicts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 1.15rem;
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+  background: var(--bg-chip);
+}
+
+.v-icon.correct {
+  color: var(--good);
+}
+
+.v-icon.close {
+  color: var(--close);
+}
+
+.v-icon.wrong,
+.v-icon.missing {
+  color: var(--bad);
+}
+
+.v-expected {
+  font-family: ui-monospace, monospace;
+}
+
+.hints {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  width: 100%;
+}
+
+.hints li {
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.hints li:last-child {
+  border-bottom: none;
+}
+
+.foreign-hint {
+  color: var(--bad);
+}
+
+.extra {
+  color: var(--text-dim);
+}
+
+.recognized {
+  color: var(--text-dim);
+  margin-bottom: 0;
+}
+
+code {
+  background: var(--bg-chip);
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+}
+
+.drill-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  margin-top: 0.9rem;
+  background: var(--bg-chip);
+}
+
+.drill-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.drill-sound {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: ui-monospace, monospace;
+}
+
+.drill-desc {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.drill-how,
+.drill-note {
+  margin: 0.6rem 0 0;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.drill-examples {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+}
+
+.example {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 500;
+  padding: 0.45rem 0.85rem;
+}
+
+.intro p {
+  line-height: 1.6;
+}
+
+.example-hint button {
+  margin-left: 0.4rem;
+  background: var(--bg-chip);
+  color: var(--accent);
+  padding: 0.3rem 0.7rem;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 3rem;
+}
+
+@media (max-width: 560px) {
+  .approx {
+    font-size: 1.5rem;
+  }
+  .word {
+    font-size: 1.7rem;
+  }
+}

@@ -1,0 +1,72 @@
+# French (France) — espeak fr-fr conventions
+code: fr-fr
+name: French (France)
+espeak_voice: fr-fr
+tts_voice: fr-FR-DeniseNeural
+
+consonants: [p, b, t, d, k, ɡ, f, v, s, z, ʃ, ʒ, m, n, ɲ, l, ʁ, j, w]
+vowels: [a, ɛ, e, i, ɔ, o, u, y, ø, œ, ə, ɑ̃, ɔ̃, ɛ̃, aɪ]
+
+orthography:
+  a: a
+  ɛ: è
+  e: é
+  i: i
+  ɔ: o
+  o: ô
+  u: ou
+  y: u
+  ø: eu
+  œ: eu
+  ə: e
+  ɑ̃: an
+  ɔ̃: on
+  ɛ̃: in
+  aɪ: ai
+  p: p
+  b: b
+  t: t
+  d: d
+  k: c
+  ɡ: g
+  f: f
+  v: v
+  s: s
+  z: z
+  ʃ: ch
+  ʒ: j
+  m: m
+  n: n
+  ɲ: gn
+  l: l
+  ʁ: r
+  j: i
+  w: ou
+
+substitutions:
+  θ: [s, t]
+  ð: [d]
+  ŋ: [n]
+  ɹ: [ʁ, r]
+  ɾ: [ʁ, r]
+  r: [ʁ]
+  ʀ: [ʁ]
+  x: [ʁ]
+  ɐ: [a]
+  æ: [ɛ]
+  ʌ: [a]
+  ɪ: [i]
+  ʊ: [u]
+  ɐ̃: [ɑ̃]
+  õ: [ɔ̃]
+  ĩ: [ɛ̃]
+  ẽ: [ɑ̃]
+  ɜː: [œ, ə]
+  ɚ: [ə]
+  ɔː: [o]
+  ɑː: [a]
+  eɪ: [e]
+  oʊ: [o]
+  əʊ: [o]
+  ʎ: [j]
+  w: [w]

@@ -1,0 +1,111 @@
+# English (US) — espeak en-us conventions
+code: en-us
+name: English (US)
+espeak_voice: en-us
+tts_voice: en-US-AriaNeural
+
+consonants: [p, b, t, d, k, ɡ, tʃ, dʒ, f, v, θ, ð, s, z, ʃ, ʒ, h, m, n, ŋ, l, ɹ, ɾ, j, w]
+vowels: [iː, i, ɪ, ʊ, uː, eɪ, oʊ, ɔɪ, aɪ, aʊ, ɛ, æ, ɑː, ɔː, ʌ, ə, ɚ, ɜː]
+
+# How English natively writes each of its own sounds (used to explain errors
+# to native English speakers: "you said X, the correct sound sounds like ...").
+orthography:
+  iː: ee
+  i: i
+  ɪ: i
+  ʊ: u
+  uː: oo
+  eɪ: ay
+  oʊ: oh
+  ɔɪ: oy
+  aɪ: ai
+  aʊ: ow
+  ɛ: e
+  æ: a
+  ɑː: ah
+  ɔː: aw
+  ʌ: u
+  ə: uh
+  ɚ: er
+  ɜː: ir
+  p: p
+  b: b
+  t: t
+  d: d
+  k: k
+  ɡ: g
+  tʃ: ch
+  dʒ: j
+  f: f
+  v: v
+  θ: th
+  ð: th
+  s: s
+  z: z
+  ʃ: sh
+  ʒ: zh
+  h: h
+  m: m
+  n: n
+  ŋ: ng
+  l: l
+  ɹ: r
+  ɾ: r
+  j: y
+  w: w
+
+# Foreign sounds → preferred native substitutes (checked in order).
+# Anything not listed falls back to automatic panphon feature distance.
+substitutions:
+  ʑ: [ʒ, ʃ]
+  # Portuguese nasal vowels and nasal diphthongs
+  ɐ̃ʊ̃: [aʊ]
+  ɐ̃: [ɑː, æ]
+  õ: [oʊ]
+  ɔ̃: [ɔː]
+  ẽ: [ɛ]
+  ĩ: [ɪ]
+  ũ: [uː]
+  ɛ̃: [ɛ]
+  ɑ̃: [ɑː]
+  œ̃: [ɜː]
+  ɐ: [ʌ, ɑː]
+  a: [ɑː, ʌ]
+  ɐː: [ɑː]
+  # Spanish/German/French sounds
+  β: [b]
+  ð: [d]
+  ɣ: [ɡ]
+  x: [h]
+  ç: [ʃ, h]
+  ʏ: [ɪ, ʊ]
+  y: [iː, ɪ]
+  yː: [iː]
+  ø: [eɪ, ɜː]
+  œ: [ɜː, ɛ]
+  ə: [ʌ, ʊ]
+  ʁ: [ɹ, h]
+  ʀ: [ɹ, h]
+  ʎ: [l, j]
+  ɲ: [nj]
+
+# Words for pronunciation drills, keyed by the sound they contain.
+drill_words:
+  θ: [think, three, thank]
+  ð: [this, that, mother]
+  ɪ: [ship, live, sit]
+  iː: [sheep, seat, leave]
+  æ: [cat, hat, bad]
+  ʌ: [cup, love, sun]
+  ə: [about, banana, computer]
+  ɚ: [water, paper, teacher]
+  ɜː: [world, work, bird]
+  h: [house, hot, behind]
+  v: [very, vest, seven]
+  ʒ: [vision, measure, usual]
+  ŋ: [king, singing, bank]
+  uː: [pool, food, blue]
+  ɔː: [law, water, door]
+  ɑː: [father, car, heart]
+  aʊ: [house, now, down]
+  aɪ: [time, my, light]

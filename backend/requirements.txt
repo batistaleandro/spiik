@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+phonemizer
+panphon
+pyyaml
+edge-tts
+torch
+torchaudio
+transformers
+huggingface_hub
+soundfile
+numpy
+python-multipart
+pytest
+httpx

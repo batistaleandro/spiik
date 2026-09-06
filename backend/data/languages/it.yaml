@@ -1,0 +1,73 @@
+# Italian — espeak it conventions
+code: it
+name: Italian
+espeak_voice: it
+tts_voice: it-IT-ElsaNeural
+
+consonants: [p, b, t, d, k, ɡ, ts, dz, tʃ, dʒ, f, v, s, z, ʃ, m, n, ɲ, ʎ, l, r, ɾ, j, w]
+vowels: [a, ɛ, e, i, ɔ, o, u, ɪ, ʊ]
+
+orthography:
+  a: a
+  ɛ: è
+  e: e
+  i: i
+  ɔ: ò
+  o: o
+  u: u
+  ɪ: i
+  ʊ: u
+  p: p
+  b: b
+  t: t
+  d: d
+  k: c
+  ɡ: g
+  ts: z
+  dz: z
+  tʃ: c
+  dʒ: g
+  f: f
+  v: v
+  s: s
+  z: s
+  ʃ: sc
+  m: m
+  n: n
+  ɲ: gn
+  ʎ: gl
+  l: l
+  r: r
+  ɾ: r
+  j: i
+  w: u
+
+substitutions:
+  θ: [t, s]
+  ð: [d]
+  ŋ: [n]
+  ə: [e]
+  ɚ: [r, e]
+  ɜː: [r, e]
+  æ: [ɛ, e]
+  ʌ: [a]
+  ɑː: [a]
+  ɔː: [ɔ, o]
+  iː: [i]
+  uː: [u]
+  eɪ: [e]
+  oʊ: [o]
+  əʊ: [o]
+  aɪ: [ai]
+  aʊ: [au]
+  ɔɪ: [ɔi]
+  ɐ: [a]
+  ɹ: [r]
+  ʁ: [r]
+  ʀ: [r]
+  x: [k]
+  ç: [ʃ]
+  y: [i]
+  ø: [e]
+  œ: [ɛ]
+  ʎ: [ʎ]

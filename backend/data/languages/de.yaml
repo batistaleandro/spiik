@@ -1,0 +1,77 @@
+# German — espeak de conventions
+code: de
+name: German
+espeak_voice: de
+tts_voice: de-DE-KatjaNeural
+
+consonants: [p, b, t, d, k, ɡ, pf, ts, f, v, s, z, ʃ, ʒ, ç, x, h, m, n, ŋ, l, ɾ, r, j]
+vowels: [a, ɑː, ɛ, eː, ɪ, iː, ɔ, oː, ʊ, uː, ʏ, yː, œ, ø, ɐ, ə, ɜ, aʊ, ɔœ, aɪ, ɔʏ]
+
+orthography:
+  a: a
+  ɑː: ah
+  ɛ: ä
+  eː: eh
+  ɪ: i
+  iː: ie
+  ɔ: o
+  oː: oh
+  ʊ: u
+  uː: uh
+  ʏ: ü
+  yː: ü
+  œ: ö
+  ø: ö
+  ɐ: er
+  ə: e
+  ɜ: er
+  aʊ: au
+  ɔœ: ö
+  aɪ: ai
+  ɔʏ: eu
+  p: p
+  b: b
+  t: t
+  d: d
+  k: k
+  ɡ: g
+  pf: pf
+  ts: z
+  f: f
+  v: w
+  s: s
+  z: s
+  ʃ: sch
+  ʒ: sch
+  ç: ch
+  x: ch
+  h: h
+  m: m
+  n: n
+  ŋ: ng
+  l: l
+  ɾ: r
+  r: r
+  j: j
+
+substitutions:
+  θ: [t, s]
+  ð: [d]
+  w: [v]
+  ɹ: [ɾ, r]
+  ʀ: [r]
+  ʁ: [ʁ, r]
+  əʊ: [oː]
+  oʊ: [oː]
+  eɪ: [eː]
+  ɔː: [oː]
+  ɜː: [ɐ]
+  ɚ: [ɐ]
+  æ: [ɛ]
+  ʌ: [a]
+  ɐ̃: [ɐ]
+  õ: [oː]
+  ĩ: [iː]
+  ẽ: [ɛ]
+  ʎ: [l]
+  ɲ: [nj]

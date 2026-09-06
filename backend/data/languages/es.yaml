@@ -1,0 +1,62 @@
+# Spanish (Castilian) — espeak es conventions
+code: es
+name: Spanish (Spain)
+espeak_voice: es
+tts_voice: es-ES-ElviraNeural
+
+consonants: [p, b, t, d, k, ɡ, tʃ, f, θ, β, ð, ɣ, x, s, z, m, n, ɲ, ʎ, l, r, ɾ, j, w]
+vowels: [a, e, i, o, u, ɛ, aɪ]
+
+orthography:
+  a: a
+  e: e
+  i: i
+  o: o
+  u: u
+  ɛ: e
+  aɪ: ai
+  p: p
+  b: b
+  t: t
+  d: d
+  k: c
+  ɡ: g
+  tʃ: ch
+  f: f
+  θ: z
+  β: b
+  ð: d
+  ɣ: g
+  x: j
+  s: s
+  z: s
+  m: m
+  n: n
+  ɲ: ñ
+  ʎ: ll
+  l: l
+  r: rr
+  ɾ: r
+  j: i
+  w: u
+
+substitutions:
+  ʃ: [tʃ, s]
+  ʒ: [ʝ, tʃ]
+  ə: [e]
+  ɚ: [ɾ, e]
+  ʌ: [a]
+  ɪ: [i]
+  ʊ: [u]
+  ɐ: [a]
+  æ: [e]
+  ɔ: [o]
+  ŋ: [n]
+  ʎ: [ʝ]
+  ʝ: [ʝ]
+  v: [b]
+  z: [s]
+  ɡ: [ɡ]
+  ʁ: [ɾ, ɣ]
+  y: [i]
+  ø: [u]
