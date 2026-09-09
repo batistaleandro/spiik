@@ -3,7 +3,7 @@
 Learn pronunciation by approximating a foreign language into your own. Spiik
 compares the **International Phonetic Alphabet (IPA)** of both languages to:
 
-1. **Write foreign words the way they sound to you** — `creation` → `cri-ei-chan`
+1. **Write foreign words the way they sound to you** — `creation` → `kri-ei-chan`
    for a Brazilian Portuguese speaker; `think` → `sinc`.
 2. **Show what the word means** — a translation into the learner's language
    (free providers: Google with MyMemory fallback, best-effort).
@@ -63,6 +63,24 @@ For frontend development with hot reload:
 
 ```bash
 cd frontend && npm run dev   # proxies /api to localhost:8900
+```
+
+## Docker
+
+```bash
+docker compose up --build
+# open http://localhost:8900
+```
+
+The image is multi-stage: Node builds the frontend, then a python:3.13-slim
+runtime installs espeak-ng + ffmpeg, CPU-only PyTorch, bakes in the wav2vec2
+model, and serves both the API and the built frontend on port 8000
+(mapped to 8900 by compose). The model is also kept in a named volume
+(`hf-cache`), so it survives image rebuilds.
+
+```bash
+PORT=9000 docker compose up -d          # different host port
+SPIIK_ENGINE=azure docker compose up    # with AZURE_SPEECH_KEY/REGION set
 ```
 
 ## Tests

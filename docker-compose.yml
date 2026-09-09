@@ -1,0 +1,18 @@
+services:
+  spiik:
+    build: .
+    image: spiik:latest
+    ports:
+      - "${PORT:-8900}:8000"
+    environment:
+      # local wav2vec2 (default) | azure (needs AZURE_SPEECH_KEY/REGION)
+      SPIIK_ENGINE: ${SPIIK_ENGINE:-local}
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY:-}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-}
+    volumes:
+      # named volume seeded from the baked-in model; survives container rebuilds
+      - hf-cache:/cache/huggingface
+    restart: unless-stopped
+
+volumes:
+  hf-cache:
