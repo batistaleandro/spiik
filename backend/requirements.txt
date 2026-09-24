@@ -12,5 +12,9 @@ huggingface_hub
 soundfile
 numpy
 python-multipart
+sqlalchemy
+pyjwt
+bcrypt
+pydantic[email]
 pytest
 httpx

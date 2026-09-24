@@ -43,8 +43,11 @@ COPY --from=frontend-build /app/frontend/dist frontend/dist
 RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('facebook/wav2vec2-lv-60-espeak-cv-ft')"
 
 RUN useradd -m spiik \
-    && mkdir -p /cache/huggingface \
-    && chown -R spiik:spiik /opt/spiik /cache/huggingface
+    && mkdir -p /cache/huggingface /data \
+    && chown -R spiik:spiik /opt/spiik /cache/huggingface /data
+
+# accounts + saved words live in SQLite at /data (mounted as a volume)
+ENV SPIIK_DB=/data/spiik.db
 USER spiik
 
 WORKDIR /opt/spiik/backend

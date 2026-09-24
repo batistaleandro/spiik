@@ -7,21 +7,27 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app.audio import decode_to_16k_mono
 from app.core.align import align, score, verdicts
-from app.core.approx import approximate
 from app.core.drills import build_drill
 from app.core.g2p import get_g2p
 from app.core.languages import load_language, list_languages
+from app.db import init_db
 from app.engines.base import get_engine
-from app.translate import translate_for_practice, translate_word
+from app.pipeline import run_analysis
+from app.routers.auth import router as auth_router
+from app.routers.words import router as words_router
 from app.tts import synthesize
 
+init_db()
+
 app = FastAPI(title="spiik", description="Pronunciation training via IPA approximation")
+app.include_router(auth_router)
+app.include_router(words_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -63,74 +69,7 @@ def analyze(req: AnalyzeRequest):
     language into the target language first; the response carries both the
     original query and the practice word.
     """
-    try:
-        target = load_language(req.target)
-        native = load_language(req.native)
-    except KeyError as exc:
-        raise HTTPException(404, str(exc)) from exc
-    g2p = get_g2p()
-
-    query = req.text.strip()
-    if req.input_lang == "native":
-        try:
-            practice_text = translate_for_practice(query, native, target)
-        except Exception:
-            practice_text = None
-        if not practice_text:
-            raise HTTPException(
-                422,
-                f"could not translate “{query}” into {target.name} — "
-                f"try typing the word in {target.name} directly",
-            )
-        translated = query  # the chip shows the word the user typed
-    else:
-        practice_text = query
-        try:
-            translated = translate_word(practice_text, target, native)
-        except Exception:
-            translated = None
-
-    word_tokens = g2p.words(practice_text, target)
-    if not word_tokens or not any(word_tokens):
-        raise HTTPException(422, f"could not phonemize: {practice_text!r}")
-
-    chunks: list[dict] = []
-    missing_sounds: dict[str, dict] = {}
-    expected_ipa: list[str] = []
-    for word_index, tokens in enumerate(word_tokens):
-        for token in tokens:
-            token.word_index = word_index
-        result = approximate(tokens, target, native)
-        chunks.extend(c.to_dict() for c in result.chunks)
-        for m in result.missing_sounds:
-            missing_sounds.setdefault(m.ipa, m.to_dict())
-        expected_ipa.extend(t.ipa for t in tokens)
-
-    # group chunk texts by word: "cri-ei-chan" for each word, words joined by space
-    words_out: list[str] = []
-    current_word: list[str] = []
-    current_index = 0
-    for chunk in chunks:
-        if chunk["word_index"] != current_index and current_word:
-            words_out.append("-".join(current_word))
-            current_word = []
-        current_index = chunk["word_index"]
-        current_word.append(chunk["text"])
-    if current_word:
-        words_out.append("-".join(current_word))
-
-    return {
-        "text": practice_text,
-        "query": query,
-        "input_lang": req.input_lang,
-        "native": {"code": native.code, "name": native.name},
-        "target": {"code": target.code, "name": target.name},
-        "translated": translated,
-        "approximation": " ".join(words_out),
-        "chunks": chunks,
-        "missing_sounds": list(missing_sounds.values()),
-        "expected_ipa": expected_ipa,
-    }
+    return run_analysis(req.native, req.target, req.text, req.input_lang)
 
 
 @app.post("/api/assess")
@@ -212,6 +151,17 @@ def drill(sound: str, target: str, native: str):
 
 
 # Serve the built frontend (production single-process deployment).
+# The catch-all falls back to index.html so SPA routes like /practice
+# survive a page refresh; real files (assets, favicon) are served as-is.
 _DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 if _DIST.exists():
-    app.mount("/", StaticFiles(directory=_DIST, html=True), name="frontend")
+    if (_DIST / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa_fallback(full_path: str):
+        if full_path:
+            candidate = (_DIST / full_path).resolve()
+            if candidate.is_file() and str(candidate).startswith(str(_DIST)):
+                return FileResponse(candidate)
+        return FileResponse(_DIST / "index.html")

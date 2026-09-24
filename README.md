@@ -13,6 +13,10 @@ compares the **International Phonetic Alphabet (IPA)** of both languages to:
 4. **Train the sounds your language doesn't have** — /θ/ doesn't exist in
    Portuguese? Spiik generates a drill card from the phoneme's IPA features
    (place, manner, voicing) with coaching text, minimal-pair examples and audio.
+5. **Remember the words you learn** — create an account, save words, and
+   review them with spaced repetition (simplified SM-2): rate each word
+   Again / Hard / Good / Easy and spiik schedules the next review, tracking
+   your confidence and progress per word.
 
 Any language pair works out of the box: the engine is driven by per-language
 data files (phoneme inventory, native orthography, substitution preferences),
@@ -29,6 +33,7 @@ not per-pair tables.
 | TTS        | edge-tts (free neural voices) with espeak-ng offline fallback       |
 | Translate  | translate.google.com/m + MyMemory (both free, best-effort)          |
 | Frontend   | Vite + React + TypeScript                                           |
+| Accounts   | SQLite (SQLAlchemy), bcrypt passwords, JWT bearer sessions          |
 
 ## Setup
 
@@ -82,6 +87,31 @@ model, and serves both the API and the built frontend on port 8000
 PORT=9000 docker compose up -d          # different host port
 SPIIK_ENGINE=azure docker compose up    # with AZURE_SPEECH_KEY/REGION set
 ```
+
+## Accounts & spaced repetition
+
+The trainer (analyze / listen / record) works without an account. Creating
+one (free, self-hosted — no email verification) unlocks:
+
+- **Saving words** — hit “Save to practice” on any analyzed word; the server
+  re-runs the analysis and stores word + translation + IPA as a card.
+- **Practice screen** — a daily queue of due cards (plus up to 20 new cards
+  per day). Recall the word, reveal the answer (meaning, spiik spelling,
+  native audio), optionally record & score your attempt, then rate yourself
+  **Again / Hard / Good / Easy** — a simplified SM-2 schedule picks the next
+  interval (10 min → 1 d → 6 d → interval × ease; ease adapts 1.3–2.8).
+- **Progress tracking** — the Words screen shows saved words with a
+  confidence bar per word (new → learning → familiar → confident → mastered
+  at 21+ day intervals), a 30-day review history, a 7-day due forecast and
+  a practice streak.
+
+Storage & config:
+
+- SQLite database at `SPIIK_DB` (default `backend/data/spiik.db`;
+  `/data/spiik.db` in Docker, mounted as the `spiik-data` volume).
+- JWT sessions are signed with `SPIIK_SECRET`; if unset, a random secret is
+  generated once and kept next to the database. Set a long random
+  `SPIIK_SECRET` in `docker-compose` for real deployments.
 
 ## Tests
 

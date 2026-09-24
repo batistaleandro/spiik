@@ -8,6 +8,7 @@ Every failure degrades to None — the app works fine without translations.
 from __future__ import annotations
 
 import functools
+import html
 import re
 import threading
 
@@ -116,6 +117,13 @@ def clean_translation(
     """
     if not value:
         return None
+    # providers leak HTML entities ("mundo&#xA0"), sometimes double-escaped —
+    # unescape until stable before any other cleaning
+    for _ in range(3):
+        unescaped = html.unescape(value)
+        if unescaped == value:
+            break
+        value = unescaped
     value = value.strip()
     if not value:
         return None
