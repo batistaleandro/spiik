@@ -6,8 +6,10 @@ from datetime import timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
@@ -22,10 +24,14 @@ DAILY_NEW_LIMIT = 20  # new cards introduced per day
 
 
 class SaveWordRequest(BaseModel):
+    # always the practice word in the target language — the word shown on
+    # the trainer card; the meaning travels separately in `translated`
     text: str = Field(min_length=1, max_length=100)
     native: str
     target: str
-    input_lang: Literal["target", "native"] = "target"
+    # the translation the client already showed the user; storing it avoids
+    # a second provider round-trip that can fail or return garbage
+    translated: str | None = Field(default=None, max_length=255)
 
 
 class ReviewRequest(BaseModel):
@@ -58,26 +64,55 @@ def card_out(word: Word) -> dict:
     }
 
 
-@router.post("/words", status_code=201)
+@router.post("/words")
 def save_word(
     req: SaveWordRequest,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> dict:
+):
     text = req.text.strip()
     if not text:
         raise HTTPException(422, "empty word")
-    existing = db.scalar(
+    # case-fold in Python: SQLite's lower() is ASCII-only and would miss
+    # duplicates in Cyrillic/Greek/etc.
+    pair_words = db.scalars(
         select(Word).where(
             Word.user_id == user.id,
             Word.native_lang == req.native,
             Word.target_lang == req.target,
-            func.lower(Word.text) == text.lower(),
         )
-    )
+    ).all()
+    folded = text.casefold()
+    existing = next((w for w in pair_words if w.text.casefold() == folded), None)
+    override = (req.translated or "").strip() or None
+    # `text` is the practiced word, in both branches — re-running the
+    # native→target translation on it would feed target-language text to
+    # the source-language translator and save the garbage it returns
     if existing:
-        raise HTTPException(409, f"“{existing.text}” is already in your words")
-    result = run_analysis(req.native, req.target, text, req.input_lang)
+        # re-saving a word updates its content (e.g. a corrected meaning)
+        # and keeps the SRS scheduling state
+        result = run_analysis(
+            req.native,
+            req.target,
+            text,
+            "target",
+            translated_override=override if override is not None else existing.translated,
+        )
+        existing.translated = result["translated"]
+        existing.approximation = result["approximation"]
+        existing.expected_ipa = " ".join(result["expected_ipa"])
+        existing.missing_sounds = result["missing_sounds"]
+        db.commit()
+        db.refresh(existing)
+        return card_out(existing)
+
+    result = run_analysis(
+        req.native,
+        req.target,
+        text,
+        "target",
+        translated_override=override,
+    )
     word = Word(
         user_id=user.id,
         text=result["text"],
@@ -90,9 +125,15 @@ def save_word(
         due_at=utcnow(),  # new cards are due immediately
     )
     db.add(word)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # concurrent save of the same word — the pre-check can't fully
+        # close that race
+        db.rollback()
+        raise HTTPException(409, f"“{text}” is already in your words") from None
     db.refresh(word)
-    return card_out(word)
+    return JSONResponse(status_code=201, content=card_out(word))
 
 
 @router.get("/words")

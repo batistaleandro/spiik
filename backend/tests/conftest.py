@@ -10,6 +10,8 @@ import tempfile
 _TEST_DIR = tempfile.mkdtemp(prefix="spiik-test-")
 os.environ["SPIIK_DB"] = os.path.join(_TEST_DIR, "spiik-test.db")
 os.environ["SPIIK_SECRET"] = "test-secret"
+# never touch local translation models (or the network) from tests
+os.environ["SPIIK_TRANSLATE"] = "online"
 
 import pytest
 from fastapi.testclient import TestClient

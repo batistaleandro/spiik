@@ -35,12 +35,102 @@ def test_save_word_runs_analysis_server_side(client, auth, monkeypatch):
     assert card["srs"]["due"] is True
 
 
-def test_duplicate_save_is_409(client, auth, monkeypatch):
+def test_native_mode_save_honors_client_translation(client, auth, monkeypatch):
+    # the meaning the client showed the user must survive a native-mode
+    # save — not be replaced by the practice word
+    _mock_translation(monkeypatch, "привет")
+    res = client.post(
+        "/api/words",
+        headers=auth,
+        json={
+            "text": "Привет",
+            "native": "pt-br",
+            "target": "ru",
+            "input_lang": "native",
+            "translated": "oi",
+        },
+    )
+    assert res.status_code == 201, res.text
+    assert res.json()["translated"] == "oi"
+
+
+def test_save_keeps_practice_word_no_retranslation(client, auth, monkeypatch):
+    # the trainer card shows "oi" translated to "Привет"; saving sends that
+    # practice word. Re-running the pt→ru translation on it (as the save
+    # endpoint used to) feeds Russian text to the pt→en Marian model, which
+    # answers with garbage — surfaced in Russian as "Не знаю" — and that
+    # garbage became the saved word. The text is already the practice word;
+    # it must never be translated again. `input_lang` is sent here the way
+    # currently-deployed frontends still do and must be ignored.
+    def fake_cached(text, gf, gt, mf, mt, allow_echo=False):
+        if (gf, gt) == ("pt", "ru"):
+            # what the local pt→en+en→ru pivot really returns for "Привет"
+            return tr.clean_translation("Не знаю", text, allow_echo=allow_echo)
+        return tr.clean_translation("oi", text, allow_echo=allow_echo)
+
+    monkeypatch.setattr(tr, "_cached", fake_cached)
+    res = client.post(
+        "/api/words",
+        headers=auth,
+        json={
+            "text": "Привет",
+            "native": "pt-br",
+            "target": "ru",
+            "input_lang": "native",
+            "translated": "oi",
+        },
+    )
+    assert res.status_code == 201, res.text
+    card = res.json()
+    assert card["text"] == "Привет"
+    assert card["translated"] == "oi"
+    assert card["approximation"]
+    assert card["expected_ipa"]
+
+
+def test_duplicate_save_updates_meaning(client, auth, monkeypatch):
     _mock_translation(monkeypatch, "mundo")
     assert _save(client, auth).status_code == 201
-    res = _save(client, auth, text="WORLD")  # case-insensitive duplicate
-    assert res.status_code == 409
-    assert "already" in res.json()["detail"]
+    # re-saving the same word (any case) updates its meaning and keeps
+    # one single card
+    res = _save(client, auth, text="WORLD")
+    assert res.status_code == 200, res.text
+    card = res.json()
+    assert card["text"] == "world"
+    assert card["srs"]["state"] == "new"
+    assert len(client.get("/api/words", headers=auth).json()) == 1
+
+
+def test_duplicate_cyrillic_word_upserts_without_500(client, auth, monkeypatch):
+    # SQLite's lower() is ASCII-only — the duplicate check must case-fold
+    # in Python or a repeated Cyrillic save crashes with a raw 500
+    _mock_translation(monkeypatch, "привет")
+    first = _save(client, auth, text="привет", target="ru")
+    assert first.status_code == 201, first.text
+    second = _save(client, auth, text="ПРИВЕТ", target="ru", translated="oi")
+    assert second.status_code == 200, second.text
+    assert second.json()["translated"] == "oi"
+    words = client.get("/api/words", headers=auth).json()
+    assert len(words) == 1
+    assert words[0]["translated"] == "oi"
+
+
+def test_save_word_stores_client_translation(client, auth, monkeypatch):
+    # the translation the user already saw wins over a fresh provider
+    # round-trip (which can fail or return garbage at save time)
+    monkeypatch.setattr(tr, "_cached", lambda *a, **k: "GARBAGE")
+    res = client.post(
+        "/api/words",
+        headers=auth,
+        json={
+            "text": "world",
+            "native": "pt-br",
+            "target": "en-us",
+            "translated": "mundo",
+        },
+    )
+    assert res.status_code == 201, res.text
+    assert res.json()["translated"] == "mundo"
 
 
 def test_list_words(client, auth, monkeypatch):

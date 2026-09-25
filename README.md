@@ -31,7 +31,7 @@ not per-pair tables.
 | Audio→IPA  | `facebook/wav2vec2-lv-60-espeak-cv-ft` (CTC, outputs IPA directly)  |
 | Distances  | `panphon` feature-weighted phoneme distances                        |
 | TTS        | edge-tts (free neural voices) with espeak-ng offline fallback       |
-| Translate  | translate.google.com/m + MyMemory (both free, best-effort)          |
+| Translate  | offline Marian (Opus-MT) → Google gtx → MyMemory (best-effort chain) |
 | Frontend   | Vite + React + TypeScript                                           |
 | Accounts   | SQLite (SQLAlchemy), bcrypt passwords, JWT bearer sessions          |
 
@@ -156,6 +156,28 @@ voice name) and you're done — any pair with any other language works. See
 stress differently per language (`"`/`^` in Russian), emits palatalization
 as a standalone `ʲ` token, and the wav2vec2 model may emit variant tokens
 (handled via `recognized_aliases`).
+
+### Translation
+
+Phrases and words are translated by a best-effort provider chain — first
+success wins, every failure degrades to no translation:
+
+1. **Offline Marian models** (Helsinki-NLP Opus-MT, one small model per
+   pair, pivoting through English for the rest) — no network, no rate
+   limits, under a second per phrase on CPU. Apache-2.0 / CC-BY-4.0.
+2. **Google's keyless gtx endpoint** — Google quality; unofficial, may
+   rate-limit (especially from datacenter IPs).
+3. **MyMemory** — translation-memory matches with a small anonymous quota.
+
+(Microsoft's keyless Edge endpoint was evaluated and dropped — its auth
+URL is gone; the short-LLM idea lost to dedicated MT models on
+faithfulness, speed and footprint — see the repo history.)
+
+`SPIIK_TRANSLATE=auto|online|off` controls how much of the chain runs
+(`auto` = local models first when their weights are cached, the default).
+The Docker image bakes the models; for local development pre-download
+them once with `python -m scripts.download_translation_models`.
+`SPIIK_MM_EMAIL` lifts MyMemory's anonymous quota tenfold.
 
 ### Hybrid scoring engine
 

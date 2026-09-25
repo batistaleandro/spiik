@@ -314,12 +314,15 @@ export async function changePassword(
 export async function saveWord(
   text: string,
   native: string,
-  target: string
+  target: string,
+  translated: string | null = null
 ): Promise<SavedWord> {
+  // text is the practice word shown on the trainer card (target language);
+  // the meaning the user saw travels in `translated`
   return authJson<SavedWord>("/api/words", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, native, target }),
+    body: JSON.stringify({ text, native, target, translated }),
   });
 }
 

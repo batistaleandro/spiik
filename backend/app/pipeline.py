@@ -14,7 +14,19 @@ from app.core.languages import load_language
 from app.translate import translate_for_practice, translate_word
 
 
-def run_analysis(native: str, target: str, text: str, input_lang: str = "target") -> dict:
+def run_analysis(
+    native: str,
+    target: str,
+    text: str,
+    input_lang: str = "target",
+    translated_override: str | None = None,
+) -> dict:
+    """Analyze `text` for a native/target pair.
+
+    `translated_override` carries the translation the client already
+    showed the user (the trainer chip) so saving a word doesn't depend on
+    a second provider round-trip.
+    """
     try:
         target_lang = load_language(target)
         native_lang = load_language(native)
@@ -37,10 +49,18 @@ def run_analysis(native: str, target: str, text: str, input_lang: str = "target"
         translated = query  # the chip shows the word the user typed
     else:
         practice_text = query
-        try:
-            translated = translate_word(practice_text, target_lang, native_lang)
-        except Exception:
-            translated = None
+        translated = None
+        if translated_override is None:
+            # no meaning came from the client — resolve one; when it did,
+            # a fresh provider round-trip can only add latency and garbage
+            try:
+                translated = translate_word(query, target_lang, native_lang)
+            except Exception:
+                translated = None
+    if translated_override is not None:
+        # the client already showed the user this translation — it wins
+        # over a fresh (possibly flaky) provider round-trip
+        translated = translated_override
 
     word_tokens = g2p.words(practice_text, target_lang)
     if not word_tokens or not any(word_tokens):

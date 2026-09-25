@@ -21,6 +21,14 @@ import { useRecorder } from "../useRecorder";
 const DEFAULT_NATIVE = "pt-br";
 const DEFAULT_TARGET = "en-us";
 
+// the chosen language pair survives reloads
+const NATIVE_KEY = "spiik_native";
+const TARGET_KEY = "spiik_target";
+
+function storedLang(key: string, fallback: string): string {
+  return localStorage.getItem(key) ?? fallback;
+}
+
 function LanguageSelect({
   languages,
   value,
@@ -129,8 +137,12 @@ function DrillCard({
 export default function TrainerScreen() {
   const { user } = useAuth();
   const [languages, setLanguages] = useState<LanguageInfo[]>([]);
-  const [native, setNative] = useState(DEFAULT_NATIVE);
-  const [target, setTarget] = useState(DEFAULT_TARGET);
+  const [native, setNative] = useState(() =>
+    storedLang(NATIVE_KEY, DEFAULT_NATIVE)
+  );
+  const [target, setTarget] = useState(() =>
+    storedLang(TARGET_KEY, DEFAULT_TARGET)
+  );
   const [inputLang, setInputLang] = useState<"target" | "native">("target");
   const [word, setWord] = useState("creation");
   const [analysis, setAnalysis] = useState<AnalyzeResult | null>(null);
@@ -143,16 +155,41 @@ export default function TrainerScreen() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
+    let alive = true;
+    // validate what was restored from storage at mount — a persisted
+    // selection may reference a language this install lacks
+    const savedNative = storedLang(NATIVE_KEY, DEFAULT_NATIVE);
+    const savedTarget = storedLang(TARGET_KEY, DEFAULT_TARGET);
     fetchLanguages()
       .then((langs) => {
+        if (!alive) return;
         setLanguages(langs);
-        if (!langs.some((l) => l.code === DEFAULT_NATIVE)) {
-          const first = langs[0];
-          if (first) setNative(first.code);
+        if (!langs.some((l) => l.code === savedNative)) {
+          const fallback = langs.some((l) => l.code === DEFAULT_NATIVE)
+            ? DEFAULT_NATIVE
+            : langs[0]?.code;
+          if (fallback) setNative((cur) => (cur === savedNative ? fallback : cur));
+        }
+        if (!langs.some((l) => l.code === savedTarget)) {
+          const fallback = langs.some((l) => l.code === DEFAULT_TARGET)
+            ? DEFAULT_TARGET
+            : langs[0]?.code;
+          if (fallback) setTarget((cur) => (cur === savedTarget ? fallback : cur));
         }
       })
-      .catch((e) => setError(String(e.message ?? e)));
+      .catch((e) => alive && setError(String(e.message ?? e)));
+    return () => {
+      alive = false;
+    };
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(NATIVE_KEY, native);
+  }, [native]);
+
+  useEffect(() => {
+    localStorage.setItem(TARGET_KEY, target);
+  }, [target]);
 
   const doAnalyze = useCallback(
     async (text?: string, langOverride?: "target" | "native") => {
@@ -222,7 +259,12 @@ export default function TrainerScreen() {
     setSaving(true);
     setError("");
     try {
-      await saveWord(analysis.text, analysis.native.code, analysis.target.code);
+      await saveWord(
+        analysis.text,
+        analysis.native.code,
+        analysis.target.code,
+        analysis.translated
+      );
       setSaved(true);
     } catch (e) {
       setError(String((e as Error).message ?? e));

@@ -7,6 +7,7 @@ import re
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import create_token, get_current_user, hash_password, verify_password
@@ -79,7 +80,13 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)) -> dict:
     email = _check_email(str(req.email), db)
     user = User(username=username, email=email, password_hash=hash_password(req.password))
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # the lower() pre-check is ASCII-only, so case-variants of
+        # non-Latin usernames land here — still a clean 409
+        db.rollback()
+        raise HTTPException(409, "username or email already registered") from None
     db.refresh(user)
     return {"access_token": create_token(user), "token_type": "bearer", "user": user_out(user)}
 

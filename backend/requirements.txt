@@ -8,6 +8,8 @@ deep-translator
 torch
 torchaudio
 transformers
+sentencepiece
+sacremoses
 huggingface_hub
 soundfile
 numpy
