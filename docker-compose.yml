@@ -9,10 +9,16 @@ services:
       SPIIK_ENGINE: ${SPIIK_ENGINE:-local}
       AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY:-}
       AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-}
+      # JWT signing secret — set this to a long random string in production;
+      # if left empty, one is generated and stored in /data on first start
+      SPIIK_SECRET: ${SPIIK_SECRET:-}
     volumes:
       # named volume seeded from the baked-in model; survives container rebuilds
       - hf-cache:/cache/huggingface
+      # SQLite database (users, saved words, review history) + generated secret
+      - spiik-data:/data
     restart: unless-stopped
 
 volumes:
   hf-cache:
+  spiik-data:

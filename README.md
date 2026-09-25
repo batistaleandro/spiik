@@ -13,6 +13,10 @@ compares the **International Phonetic Alphabet (IPA)** of both languages to:
 4. **Train the sounds your language doesn't have** — /θ/ doesn't exist in
    Portuguese? Spiik generates a drill card from the phoneme's IPA features
    (place, manner, voicing) with coaching text, minimal-pair examples and audio.
+5. **Remember the words you learn** — create an account, save words, and
+   review them with spaced repetition (simplified SM-2): rate each word
+   Again / Hard / Good / Easy and spiik schedules the next review, tracking
+   your confidence and progress per word.
 
 Any language pair works out of the box: the engine is driven by per-language
 data files (phoneme inventory, native orthography, substitution preferences),
@@ -27,8 +31,9 @@ not per-pair tables.
 | Audio→IPA  | `facebook/wav2vec2-lv-60-espeak-cv-ft` (CTC, outputs IPA directly)  |
 | Distances  | `panphon` feature-weighted phoneme distances                        |
 | TTS        | edge-tts (free neural voices) with espeak-ng offline fallback       |
-| Translate  | translate.google.com/m + MyMemory (both free, best-effort)          |
+| Translate  | offline Marian (Opus-MT) → Google gtx → MyMemory (best-effort chain) |
 | Frontend   | Vite + React + TypeScript                                           |
+| Accounts   | SQLite (SQLAlchemy), bcrypt passwords, JWT bearer sessions          |
 
 ## Setup
 
@@ -83,6 +88,31 @@ PORT=9000 docker compose up -d          # different host port
 SPIIK_ENGINE=azure docker compose up    # with AZURE_SPEECH_KEY/REGION set
 ```
 
+## Accounts & spaced repetition
+
+The trainer (analyze / listen / record) works without an account. Creating
+one (free, self-hosted — no email verification) unlocks:
+
+- **Saving words** — hit “Save to practice” on any analyzed word; the server
+  re-runs the analysis and stores word + translation + IPA as a card.
+- **Practice screen** — a daily queue of due cards (plus up to 20 new cards
+  per day). Recall the word, reveal the answer (meaning, spiik spelling,
+  native audio), optionally record & score your attempt, then rate yourself
+  **Again / Hard / Good / Easy** — a simplified SM-2 schedule picks the next
+  interval (10 min → 1 d → 6 d → interval × ease; ease adapts 1.3–2.8).
+- **Progress tracking** — the Words screen shows saved words with a
+  confidence bar per word (new → learning → familiar → confident → mastered
+  at 21+ day intervals), a 30-day review history, a 7-day due forecast and
+  a practice streak.
+
+Storage & config:
+
+- SQLite database at `SPIIK_DB` (default `backend/data/spiik.db`;
+  `/data/spiik.db` in Docker, mounted as the `spiik-data` volume).
+- JWT sessions are signed with `SPIIK_SECRET`; if unset, a random secret is
+  generated once and kept next to the database. Set a long random
+  `SPIIK_SECRET` in `docker-compose` for real deployments.
+
 ## Tests
 
 ```bash
@@ -126,6 +156,28 @@ voice name) and you're done — any pair with any other language works. See
 stress differently per language (`"`/`^` in Russian), emits palatalization
 as a standalone `ʲ` token, and the wav2vec2 model may emit variant tokens
 (handled via `recognized_aliases`).
+
+### Translation
+
+Phrases and words are translated by a best-effort provider chain — first
+success wins, every failure degrades to no translation:
+
+1. **Offline Marian models** (Helsinki-NLP Opus-MT, one small model per
+   pair, pivoting through English for the rest) — no network, no rate
+   limits, under a second per phrase on CPU. Apache-2.0 / CC-BY-4.0.
+2. **Google's keyless gtx endpoint** — Google quality; unofficial, may
+   rate-limit (especially from datacenter IPs).
+3. **MyMemory** — translation-memory matches with a small anonymous quota.
+
+(Microsoft's keyless Edge endpoint was evaluated and dropped — its auth
+URL is gone; the short-LLM idea lost to dedicated MT models on
+faithfulness, speed and footprint — see the repo history.)
+
+`SPIIK_TRANSLATE=auto|online|off` controls how much of the chain runs
+(`auto` = local models first when their weights are cached, the default).
+The Docker image bakes the models; for local development pre-download
+them once with `python -m scripts.download_translation_models`.
+`SPIIK_MM_EMAIL` lifts MyMemory's anonymous quota tenfold.
 
 ### Hybrid scoring engine
 

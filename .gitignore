@@ -13,3 +13,11 @@ frontend/dist/
 
 # Model / data caches
 *.log
+
+# accounts + SRS database, generated JWT secret
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/secret.key
+
+# impeccable per-developer overrides
+.impeccable/config.local.json

@@ -39,12 +39,19 @@ COPY backend/scripts backend/scripts
 COPY backend/tests backend/tests
 COPY --from=frontend-build /app/frontend/dist frontend/dist
 
-# bake the wav2vec2 phoneme model
-RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('facebook/wav2vec2-lv-60-espeak-cv-ft')"
+# bake the wav2vec2 phoneme model + the Marian translation models
+# (offline phrase translation)
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('facebook/wav2vec2-lv-60-espeak-cv-ft')" \
+    && python -c "from app.translate_local import MODEL_IDS; \
+from huggingface_hub import snapshot_download; \
+[snapshot_download(model_id) for model_id in MODEL_IDS]"
 
 RUN useradd -m spiik \
-    && mkdir -p /cache/huggingface \
-    && chown -R spiik:spiik /opt/spiik /cache/huggingface
+    && mkdir -p /cache/huggingface /data \
+    && chown -R spiik:spiik /opt/spiik /cache/huggingface /data
+
+# accounts + saved words live in SQLite at /data (mounted as a volume)
+ENV SPIIK_DB=/data/spiik.db
 USER spiik
 
 WORKDIR /opt/spiik/backend

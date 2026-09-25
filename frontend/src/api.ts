@@ -69,19 +69,134 @@ export interface Drill {
   examples: { word: string; ipa: string }[];
 }
 
-async function jsonOrThrow<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    let detail = res.statusText;
-    try {
-      const body = await res.json();
-      if (body.detail) detail = body.detail;
-    } catch {
-      /* keep statusText */
-    }
-    throw new Error(detail);
+// ---- accounts / SRS -------------------------------------------------------
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export type Rating = "again" | "hard" | "good" | "easy";
+
+export interface Confidence {
+  percent: number;
+  label: string;
+}
+
+export interface SrsState {
+  state: "new" | "learning" | "review";
+  ease: number;
+  interval_days: number;
+  reps: number;
+  lapses: number;
+  due_at: string | null;
+  last_review_at: string | null;
+  confidence: Confidence;
+  due: boolean;
+  next_intervals: Record<Rating, string>;
+}
+
+export interface SavedWord {
+  id: number;
+  text: string;
+  translated: string | null;
+  approximation: string;
+  expected_ipa: string[];
+  native: string;
+  target: string;
+  missing_sounds: MissingSound[];
+  created_at: string;
+  srs: SrsState;
+}
+
+export interface PracticeQueue {
+  items: SavedWord[];
+  counts: { due: number; new: number };
+  next_due: string | null;
+}
+
+export interface Progress {
+  total: number;
+  new: number;
+  learning: number;
+  review: number;
+  mastered: number;
+  due_now: number;
+  streak: number;
+  reviews_last_30d: { date: string; count: number }[];
+  forecast: { date: string; count: number }[];
+}
+
+// ---- fetch helpers --------------------------------------------------------
+
+const TOKEN_KEY = "spiik_token";
+
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setToken(token: string | null): void {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// a protected endpoint rejected our token — drop it and go log in again
+function handleExpired(res: Response): void {
+  if (res.status === 401 && getToken()) {
+    setToken(null);
+    window.location.href = "/login";
   }
+}
+
+// FastAPI validation errors send detail as an array of { msg, loc, ... }
+// instead of the plain string other handlers use.
+function detailText(detail: unknown): string {
+  const parts = (Array.isArray(detail) ? detail : [detail]).map((d) =>
+    d && typeof d === "object" && "msg" in d
+      ? String((d as { msg: unknown }).msg)
+      : String(d)
+  );
+  return parts.filter(Boolean).join("; ") || "Request failed";
+}
+
+async function errorFrom(res: Response): Promise<Error> {
+  let detail: unknown = res.statusText;
+  try {
+    const body = await res.json();
+    if (body.detail) detail = body.detail;
+  } catch {
+    /* keep statusText */
+  }
+  return new Error(detailText(detail));
+}
+
+async function jsonOrThrow<T>(res: Response): Promise<T> {
+  if (!res.ok) throw await errorFrom(res);
   return res.json() as Promise<T>;
 }
+
+async function authJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, {
+    ...init,
+    headers: { ...authHeaders(), ...init?.headers },
+  });
+  handleExpired(res);
+  return jsonOrThrow<T>(res);
+}
+
+// ---- phonetics endpoints --------------------------------------------------
 
 export async function fetchLanguages(): Promise<LanguageInfo[]> {
   const res = await fetch("/api/languages");
@@ -136,4 +251,109 @@ export async function fetchDrill(
   const params = new URLSearchParams({ sound, target, native });
   const res = await fetch(`/api/drill?${params}`);
   return jsonOrThrow<Drill>(res);
+}
+
+// ---- auth endpoints -------------------------------------------------------
+
+export async function register(
+  username: string,
+  email: string,
+  password: string
+): Promise<AuthResponse> {
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, email, password }),
+  });
+  return jsonOrThrow<AuthResponse>(res);
+}
+
+export async function login(
+  username: string,
+  password: string
+): Promise<AuthResponse> {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  return jsonOrThrow<AuthResponse>(res);
+}
+
+export async function fetchMe(): Promise<User> {
+  return authJson<User>("/api/auth/me");
+}
+
+export async function updateProfile(
+  fields: { username?: string; email?: string }
+): Promise<User> {
+  return authJson<User>("/api/auth/me", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const res = await fetch("/api/auth/password", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
+// ---- saved words / practice / progress ------------------------------------
+
+export async function saveWord(
+  text: string,
+  native: string,
+  target: string,
+  translated: string | null = null
+): Promise<SavedWord> {
+  // text is the practice word shown on the trainer card (target language);
+  // the meaning the user saw travels in `translated`
+  return authJson<SavedWord>("/api/words", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, native, target, translated }),
+  });
+}
+
+export async function fetchWords(): Promise<SavedWord[]> {
+  return authJson<SavedWord[]>("/api/words");
+}
+
+export async function deleteWord(id: number): Promise<void> {
+  const res = await fetch(`/api/words/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  handleExpired(res);
+  if (!res.ok) throw await errorFrom(res);
+}
+
+export async function fetchPractice(): Promise<PracticeQueue> {
+  return authJson<PracticeQueue>("/api/practice");
+}
+
+export async function reviewWord(
+  id: number,
+  rating: Rating
+): Promise<SavedWord> {
+  return authJson<SavedWord>(`/api/practice/${id}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rating }),
+  });
+}
+
+export async function fetchProgress(): Promise<Progress> {
+  return authJson<Progress>("/api/progress");
 }
