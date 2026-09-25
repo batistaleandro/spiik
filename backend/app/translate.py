@@ -4,7 +4,8 @@ Provider chain, first success wins, every failure degrades to None:
 
 1. local Marian models (offline, when the weights are cached and
    SPIIK_TRANSLATE allows it) — see app/translate_local.py
-2. Google's keyless gtx JSON endpoint — machine-readable, handles phrases
+2. Google's keyless endpoints (gtx JSON, falling back to Chrome's
+   dict-chrome-ex when gtx rate-limits) — handles phrases
 3. MyMemory (translation-memory matches, small anonymous quota)
 
 Free providers only, no API keys. `SPIIK_TRANSLATE=auto|online|off`
@@ -159,17 +160,39 @@ def _run_provider(
 
 
 def _google(text: str, src: str, dst: str) -> str | None:
-    """Google's keyless gtx endpoint (client=gtx): machine-readable JSON
-    with per-sentence segments — handles phrases, unlike the old /m page
-    scrape this replaces."""
+    """Google's keyless endpoints. Primary: the gtx JSON endpoint
+    (client=gtx) with per-sentence segments. It rate-limits hard by IP
+    (429 for every request once flagged), so a failure falls back to the
+    Chrome dict-chrome-ex endpoint, which has a separate quota and returns
+    a plain JSON array of translated segments."""
+    try:
+        resp = requests.get(
+            "https://translate.googleapis.com/translate_a/single",
+            params={
+                "client": "gtx",
+                "dj": "1",
+                "dt": "t",
+                "sl": src,
+                "tl": dst,
+                "q": text,
+            },
+            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=_TIMEOUT_S,
+        )
+        resp.raise_for_status()
+        parsed = _parse_gtx(resp.json())
+        if parsed:
+            return parsed
+    except requests.RequestException:
+        pass
     resp = requests.get(
-        "https://translate.googleapis.com/translate_a/single",
-        params={"client": "gtx", "dj": "1", "dt": "t", "sl": src, "tl": dst, "q": text},
+        "https://clients5.google.com/translate_a/t",
+        params={"client": "dict-chrome-ex", "sl": src, "tl": dst, "q": text},
         headers={"User-Agent": "Mozilla/5.0"},
         timeout=_TIMEOUT_S,
     )
     resp.raise_for_status()
-    return _parse_gtx(resp.json())
+    return _parse_chrome(resp.json())
 
 
 def _parse_gtx(data: dict) -> str | None:
@@ -177,6 +200,20 @@ def _parse_gtx(data: dict) -> str | None:
     if not sentences:
         return None
     out = "".join(s.get("trans", "") for s in sentences if isinstance(s, dict))
+    return out or None
+
+
+def _parse_chrome(data) -> str | None:
+    """dict-chrome-ex answers ["สวัสดี"] or, for some responses, a list of
+    ["trans", "orig", ...] rows — take the translated string of each."""
+    if not isinstance(data, list):
+        return None
+    out = ""
+    for item in data:
+        if isinstance(item, str):
+            out += item
+        elif isinstance(item, list) and item and isinstance(item[0], str):
+            out += item[0]
     return out or None
 
 

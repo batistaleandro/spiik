@@ -2,7 +2,7 @@
 
 One small model per language pair; pairs without a direct model pivot
 through English (pt→de = pt→en + en→de), which covers every combination
-of the shipped languages with 12 models. All models are Apache-2.0 or
+of the shipped languages with 13 models. All models are Apache-2.0 or
 CC-BY-4.0 and translate a phrase comfortably under a second on CPU.
 
 Models are loaded lazily and kept in a small LRU so RAM stays bounded
@@ -33,6 +33,9 @@ _MODELS: dict[tuple[str, str], tuple[str, str | None, str | None]] = {
     ("it", "en"): ("Helsinki-NLP/opus-mt-it-en", None, None),
     ("en", "ru"): ("Helsinki-NLP/opus-mt-en-ru", None, None),
     ("ru", "en"): ("Helsinki-NLP/opus-mt-ru-en", None, None),
+    # Thai has no en→th Marian model on HF; th→en still gives every
+    # th→X pair a pivot and X→th falls back to the hosted chain
+    ("th", "en"): ("Helsinki-NLP/opus-mt-th-en", None, None),
 }
 
 MODEL_IDS = sorted({model for model, _, _ in _MODELS.values()})

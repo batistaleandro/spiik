@@ -34,7 +34,7 @@ Shipped features and what's planned next live in the
 | Audio→IPA  | `facebook/wav2vec2-lv-60-espeak-cv-ft` (CTC, outputs IPA directly)  |
 | Distances  | `panphon` feature-weighted phoneme distances                        |
 | TTS        | edge-tts (free neural voices) with espeak-ng offline fallback       |
-| Translate  | offline Marian (Opus-MT) → Google gtx → MyMemory (best-effort chain) |
+| Translate  | offline Marian (Opus-MT) → Google gtx/Chrome → MyMemory (best-effort chain) |
 | Frontend   | Vite + React + TypeScript                                           |
 | Accounts   | SQLite (SQLAlchemy), bcrypt passwords, JWT bearer sessions          |
 
@@ -168,8 +168,10 @@ success wins, every failure degrades to no translation:
 1. **Offline Marian models** (Helsinki-NLP Opus-MT, one small model per
    pair, pivoting through English for the rest) — no network, no rate
    limits, under a second per phrase on CPU. Apache-2.0 / CC-BY-4.0.
-2. **Google's keyless gtx endpoint** — Google quality; unofficial, may
-   rate-limit (especially from datacenter IPs).
+2. **Google's keyless endpoints** — gtx JSON first; when it rate-limits
+   (it 429s by IP once flagged, especially from datacenter IPs) the
+   Chrome `dict-chrome-ex` endpoint takes over, which has a separate
+   quota.
 3. **MyMemory** — translation-memory matches with a small anonymous quota.
 
 (Microsoft's keyless Edge endpoint was evaluated and dropped — its auth
