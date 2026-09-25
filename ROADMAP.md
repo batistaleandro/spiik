@@ -119,22 +119,25 @@ The core loop: analyze → listen → record → drill.
 
 ---
 
-## v0.4 — Foundations for growth *(next up)*
+## v0.4 — Foundations for growth *(complete — September 2026)*
 
 > Priority: High. Everything queued after this — payments, community, more
 > learners — needs an app that deploys easily, scales when it must, and
 > releases itself.
 
-- [ ] **As a self-hoster, I can deploy spiik with confidence and scale its
+- [x] **As a self-hoster, I can deploy spiik with confidence and scale its
   backend as more learners join**
-  - [ ] Make the backend services easy to deploy and scale as needed
-    (model-heavy inference is CPU-bound today)
-- [ ] **As an operator, I can watch how my instance is doing without digging
+  - [x] Make the backend services easy to deploy and scale as needed
+    (CPU-bound assessment moved off the event loop, per-request engine
+    reloads fixed, `WEB_CONCURRENCY` worker scaling, SQLite WAL,
+    versioned GHCR images via `SPIIK_IMAGE`)
+- [x] **As an operator, I can watch how my instance is doing without digging
   through logs**
-  - [ ] Observability — metrics and dashboards (Grafana as the leading
-    candidate)
-- [ ] **As a contributor, I get versioned releases automatically**
-  - [ ] CI/CD for automatic versioning and release (git tags + Docker image
+  - [x] Observability — Prometheus metrics on `/metrics` + opt-in
+    Grafana/Prometheus compose profile with a pre-provisioned spiik
+    dashboard; `/api/health` for liveness + build identity
+- [x] **As a contributor, I get versioned releases automatically**
+  - [x] CI/CD for automatic versioning and release (git tags + Docker image
     tags) — making the versions in this roadmap real
 
 ---

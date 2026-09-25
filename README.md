@@ -91,6 +91,67 @@ PORT=9000 docker compose up -d          # different host port
 SPIIK_ENGINE=azure docker compose up    # with AZURE_SPEECH_KEY/REGION set
 ```
 
+## Scaling
+
+The backend is a single FastAPI app; model-heavy inference (wav2vec2
+assessment, Marian translation) is CPU-bound and lazy-loaded.
+
+- **Workers** — `WEB_CONCURRENCY=N` runs N uvicorn worker processes (compose
+  passes it through; the Dockerfile defaults to 1). Requests are already
+  kept off the event loop (assessment runs in a threadpool), so workers
+  help most when inference saturates one CPU core. Each worker loads its
+  own copy of every model it uses: ~1.5–2 GB RAM once the ASR model is
+  warm, plus up to ~1 GB per loaded Marian model (LRU of 2). 2–4 workers
+  is the sensible range on a typical 4-core host.
+- **SQLite** — the database runs in WAL mode with a 5 s busy timeout, so
+  concurrent workers and readers don't block each other. For multi-host
+  scaling, move the database first; everything else is stateless.
+- **Vertical first** — a bigger instance with more `WEB_CONCURRENCY` is
+  the intended scaling path; there is no shared state between requests.
+
+## Observability
+
+The backend exposes Prometheus metrics at `/metrics` (request counts and
+latency by route, in-flight requests, assessment/recognition latency,
+model loads, translation provider outcomes, TTS provider, process
+CPU/RSS). `/api/health` reports liveness plus the running version and
+scoring engine — the Docker healthcheck uses it.
+
+Grafana + Prometheus ship as an opt-in compose profile, pre-provisioned
+with a spiik dashboard (request rate/latency, error rate, assessment
+latency, model loads, translation outcomes, process resources):
+
+```bash
+docker compose --profile observability up -d
+# Prometheus: http://localhost:9090 · Grafana: http://localhost:3000 (admin/admin — change it)
+```
+
+Config lives in `observability/` (scrape config, Grafana provisioning and
+the dashboard JSON); Prometheus/Grafana data go into named volumes.
+
+## Releases & versioning
+
+The git tag is the version. Pushing `v0.4.0` triggers the release
+workflow, which builds the full image (models baked in), publishes it to
+GHCR as `v0.4.0` / `0.4` / `0` / `latest`, and creates a GitHub release
+with generated notes. The tag is baked into the image as `SPIIK_VERSION`
+— `/api/health` reports it and logged-in users see it on the Profile
+screen (`dev` builds hide it).
+
+```bash
+git tag v0.4.0 && git push origin v0.4.0   # cut a release
+```
+
+Self-hosters can pin a release without building:
+
+```bash
+SPIIK_IMAGE=ghcr.io/batistaleandro/spiik:v0.4.0 docker compose up -d
+```
+
+CI (`.github/workflows/ci.yml`) runs the backend tests, frontend lint +
+build and a Docker build (models skipped via `BAKE_MODELS=false`) on
+every push and PR.
+
 ## Accounts & spaced repetition
 
 The trainer (analyze / listen / record) works without an account. Creating

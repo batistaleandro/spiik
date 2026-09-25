@@ -1,7 +1,9 @@
 services:
   spiik:
+    # pull a released image instead of building:
+    #   SPIIK_IMAGE=ghcr.io/batistaleandro/spiik:v0.4.0 docker compose up -d
     build: .
-    image: spiik:latest
+    image: ${SPIIK_IMAGE:-spiik:latest}
     ports:
       - "${PORT:-8900}:8000"
     environment:
@@ -12,6 +14,9 @@ services:
       # JWT signing secret — set this to a long random string in production;
       # if left empty, one is generated and stored in /data on first start
       SPIIK_SECRET: ${SPIIK_SECRET:-}
+      # number of uvicorn worker processes (CPU-bound inference scales
+      # with this; each worker loads its own model copies — see README)
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
     volumes:
       # named volume seeded from the baked-in model; survives container rebuilds
       - hf-cache:/cache/huggingface
@@ -19,6 +24,37 @@ services:
       - spiik-data:/data
     restart: unless-stopped
 
+  # ---- observability (opt-in) ----------------------------------------------
+  # docker compose --profile observability up -d
+  # Prometheus: http://localhost:9090 · Grafana: http://localhost:3000
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    profiles: ["observability"]
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:12.4.1
+    profiles: ["observability"]
+    environment:
+      # admin/admin unless overridden — change it on any exposed instance
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    restart: unless-stopped
+
 volumes:
   hf-cache:
   spiik-data:
+  prometheus-data:
+  grafana-data:

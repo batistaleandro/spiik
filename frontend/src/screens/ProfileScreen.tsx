@@ -1,11 +1,18 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { changePassword, updateProfile } from "../api";
+import { changePassword, fetchHealth, updateProfile } from "../api";
 import { useAuth } from "../auth-context";
 
 export default function ProfileScreen() {
   const { user, setUser, logout } = useAuth();
   const navigate = useNavigate();
+  const [version, setVersion] = useState("");
+
+  useEffect(() => {
+    fetchHealth()
+      .then((h) => setVersion(h.version))
+      .catch(() => setVersion(""));
+  }, []);
 
   const [username, setUsername] = useState(user?.username ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
@@ -152,6 +159,9 @@ export default function ProfileScreen() {
         >
           Log out
         </button>
+        {version && version !== "dev" && (
+          <p className="ok-note">spiik {version}</p>
+        )}
       </section>
     </main>
   );

@@ -8,9 +8,12 @@ pronunciation. First use downloads ~1.3 GB and is slow.
 from __future__ import annotations
 
 import threading
+import time
 import unicodedata
 
 import numpy as np
+
+from app.metrics import ASR_LATENCY, MODEL_LOADS, MODEL_LOAD_SECONDS
 
 MODEL_ID = "facebook/wav2vec2-lv-60-espeak-cv-ft"
 
@@ -35,17 +38,28 @@ class LocalEngine:
             import torch
             from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
-            self._processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
-            self._model = Wav2Vec2ForCTC.from_pretrained(MODEL_ID)
+            start = time.perf_counter()
+            try:
+                self._processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
+                self._model = Wav2Vec2ForCTC.from_pretrained(MODEL_ID)
+            except Exception:
+                MODEL_LOADS.labels(MODEL_ID, "fail").inc()
+                raise
             self._model.eval()
             self._blank_id = self._processor.tokenizer.pad_token_id
             self._torch = torch
+            MODEL_LOAD_SECONDS.labels(MODEL_ID).observe(time.perf_counter() - start)
+            MODEL_LOADS.labels(MODEL_ID, "ok").inc()
 
     def transcribe(self, audio: np.ndarray, sample_rate: int) -> list[str]:
         self._ensure_loaded()
         assert self._processor is not None and self._model is not None
         torch = self._torch
 
+        with ASR_LATENCY.labels(MODEL_ID).time():
+            return self._transcribe(audio, sample_rate)
+
+    def _transcribe(self, audio: np.ndarray, sample_rate: int) -> list[str]:
         if audio.ndim > 1:
             audio = audio.mean(axis=1)
         if sample_rate != 16000:

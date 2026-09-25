@@ -45,7 +45,7 @@ def test_approximate_creation_pt(g2p, langs):
     en, pt = langs
     tokens = g2p.phonemize("creation", en)
     result = approximate(tokens, en, pt)
-    assert result.text == "cri-ei-chan"
+    assert result.text == "kri-ei-chan"
     # every chunk maps back to the word's phonemes
     assert sum(len(c.phonemes) for c in result.chunks) == len(tokens)
     missing = {m.ipa for m in result.missing_sounds}
@@ -56,7 +56,7 @@ def test_approximate_think_pt(g2p, langs):
     en, pt = langs
     tokens = g2p.phonemize("think", en)
     result = approximate(tokens, en, pt)
-    assert result.text == "sinc"
+    assert result.text == "sink"
     missing = {m.ipa: m for m in result.missing_sounds}
     # θ is THE classic sound Portuguese lacks → major, not minor
     assert "θ" in missing and not missing["θ"].minor

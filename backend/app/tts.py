@@ -8,13 +8,17 @@ import tempfile
 from pathlib import Path
 
 from app.core.languages import Language
+from app.metrics import TTS_SYNTH
 
 
 async def synthesize(text: str, lang: Language) -> tuple[bytes, str]:
     """Return (audio_bytes, media_type) for `text` spoken in `lang`."""
     try:
-        return await _edge_tts(text, lang.tts_voice), "audio/mpeg"
+        audio = await _edge_tts(text, lang.tts_voice)
+        TTS_SYNTH.labels("edge-tts").inc()
+        return audio, "audio/mpeg"
     except Exception:
+        TTS_SYNTH.labels("espeak").inc()
         return _espeak_tts(text, lang.espeak_voice), "audio/wav"
 
 

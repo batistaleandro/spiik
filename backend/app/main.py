@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import tempfile
+import time
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 
 from app.audio import decode_to_16k_mono
 from app.core.align import align, score, verdicts
@@ -18,15 +21,27 @@ from app.core.g2p import get_g2p
 from app.core.languages import load_language, list_languages
 from app.db import init_db
 from app.engines.base import get_engine
+from app.metrics import (
+    ASSESS_LATENCY,
+    HTTP_IN_FLIGHT,
+    HTTP_LATENCY,
+    HTTP_REQUESTS,
+    record_build_info,
+)
 from app.pipeline import run_analysis
 from app.routers.auth import router as auth_router
 from app.routers.pronunciation import router as pronunciation_router
 from app.routers.words import router as words_router
 from app.tts import synthesize
+from app.version import VERSION
 
 init_db()
 
-app = FastAPI(title="spiik", description="Pronunciation training via IPA approximation")
+app = FastAPI(
+    title="spiik",
+    description="Pronunciation training via IPA approximation",
+    version=VERSION,
+)
 app.include_router(auth_router)
 app.include_router(words_router)
 app.include_router(pronunciation_router)
@@ -42,6 +57,31 @@ app.add_middleware(
 import os
 
 ENGINE_NAME = os.environ.get("SPIIK_ENGINE", "local")
+record_build_info(VERSION, ENGINE_NAME)
+
+
+@app.middleware("http")
+async def track_metrics(request: Request, call_next):
+    """Count and time every request by templated route.
+
+    /metrics itself is excluded so scraping doesn't pollute the series
+    it reads.
+    """
+    HTTP_IN_FLIGHT.inc()
+    start = time.perf_counter()
+    status = 500
+    try:
+        response = await call_next(request)
+        status = response.status_code
+        return response
+    finally:
+        HTTP_IN_FLIGHT.dec()
+        if request.url.path != "/metrics":
+            route = getattr(request.scope.get("route"), "path", "unmatched")
+            HTTP_REQUESTS.labels(request.method, route, str(status)).inc()
+            HTTP_LATENCY.labels(request.method, route).observe(
+                time.perf_counter() - start
+            )
 
 
 class AnalyzeRequest(BaseModel):
@@ -53,6 +93,18 @@ class AnalyzeRequest(BaseModel):
         description="which language `text` is in: 'target' (default) or 'native' — "
         "when 'native', text is translated into the target language first",
     )
+
+
+@app.get("/api/health")
+def health():
+    """Liveness + build identity; used by the Docker healthcheck."""
+    return {"status": "ok", "version": VERSION, "engine": ENGINE_NAME}
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics():
+    """Prometheus scrape endpoint."""
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/api/languages")
@@ -83,27 +135,51 @@ async def assess(
 ):
     """Score a recording against the expected IPA sequence."""
     try:
-        target_lang = load_language(target)
-        native_lang = load_language(native)
+        load_language(target)
+        load_language(native)
     except KeyError as exc:
         raise HTTPException(404, str(exc)) from exc
 
     data = await audio.read()
     if not data:
         raise HTTPException(422, "empty audio upload")
+
+    # decode + torch inference + alignment are CPU-bound; keep them off
+    # the event loop so slow recognitions can't stall the whole app
+    with ASSESS_LATENCY.time():
+        result = await run_in_threadpool(
+            _assess_bytes, data, expected_ipa, native, target
+        )
+    if isinstance(result, tuple):  # (status_code, detail) error
+        raise HTTPException(result[0], result[1])
+    return result
+
+
+def _assess_bytes(
+    data: bytes, expected_ipa: str, native: str, target: str
+) -> dict | tuple[int, str]:
+    try:
+        target_lang = load_language(target)
+        native_lang = load_language(native)
+    except KeyError as exc:
+        return (404, str(exc))
+
     try:
         samples, sr = decode_to_16k_mono(data)
     except ValueError as exc:
-        raise HTTPException(422, str(exc)) from exc
+        return (422, str(exc))
     if len(samples) < sr * 0.2:
-        raise HTTPException(422, "recording too short — hold the button while speaking")
+        return (
+            422,
+            "recording too short — hold the button while speaking",
+        )
 
     expected = expected_ipa.split()
     engine = get_engine(ENGINE_NAME)
     try:
         recognized = engine.transcribe(samples, sr)
     except NotImplementedError as exc:
-        raise HTTPException(501, str(exc)) from exc
+        return (501, str(exc))
 
     # normalize espeak-version token drift (e.g. model sʲ ≈ G2P s + ʲ)
     expanded: list[str] = []
