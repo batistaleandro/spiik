@@ -11,6 +11,7 @@ import {
 } from "../api";
 import Feedback from "../components/Feedback";
 import MissingBadges from "../components/MissingBadges";
+import PronunciationFeedback from "../components/PronunciationFeedback";
 import { untilStr } from "../time";
 import { useRecorder } from "../useRecorder";
 
@@ -192,7 +193,16 @@ export default function PracticeScreen() {
           // side A: the word, how to say it, and the recording
           <>
             <h2 className="practice-word">{card!.text}</h2>
-            <p className="approx-plain">{card!.approximation}</p>
+            <PronunciationFeedback
+              key={card!.id}
+              native={card!.native}
+              target={card!.target}
+              text={card!.text}
+              systemApproximation={card!.approximation}
+              initial={card!.pronunciation}
+            >
+              <p className="approx-plain">{card!.approximation}</p>
+            </PronunciationFeedback>
             <p className="approx-caption">how it sounds in your language</p>
             <MissingBadges missing={card!.missing_sounds} />
 

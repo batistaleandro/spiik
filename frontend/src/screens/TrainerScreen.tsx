@@ -16,6 +16,7 @@ import {
 import { useAuth } from "../auth-context";
 import Feedback from "../components/Feedback";
 import MissingBadges from "../components/MissingBadges";
+import PronunciationFeedback from "../components/PronunciationFeedback";
 import { useRecorder } from "../useRecorder";
 
 const DEFAULT_NATIVE = "pt-br";
@@ -385,11 +386,19 @@ export default function TrainerScreen() {
                 </span>
               )}
             </div>
-            <div className="approx">
-              {analysis.chunks.map((c, i) => (
-                <ChunkChip key={i} chunk={c} />
-              ))}
-            </div>
+            <PronunciationFeedback
+              key={`${analysis.native.code}|${analysis.target.code}|${analysis.text}`}
+              native={analysis.native.code}
+              target={analysis.target.code}
+              text={analysis.text}
+              systemApproximation={analysis.approximation}
+            >
+              <div className="approx">
+                {analysis.chunks.map((c, i) => (
+                  <ChunkChip key={i} chunk={c} />
+                ))}
+              </div>
+            </PronunciationFeedback>
             <p className="approx-caption">
               how it sounds to you, written in {analysis.native.name} · underlined = stressed
             </p>
