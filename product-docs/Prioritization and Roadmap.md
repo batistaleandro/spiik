@@ -1,6 +1,6 @@
 # Spiik Product Priorities & Impact/Effort Evaluation
 
-This document details the multi-perspective evaluation of features from the [[Kanban]] board across **Engineering**, **Visionary**, and **Product** profiles.
+This document details the multi-perspective evaluation of features from the [[Kanban]] board across **Engineering**, **Visionary**, and **Product** profiles, updated with the strategic directive prioritizing **community development, crowdsourced data, and viral network effects**.
 
 ---
 
@@ -9,99 +9,116 @@ This document details the multi-perspective evaluation of features from the [[Ka
 ```
        HIGH IMPACT
             ▲
-            │  [[Add additional Language Support]]   [[Mobile Version]] (PWA)
-            │  (Thai, Vietnamese, Georgian)         [[Basic Devops]] (CI/CD)
-            │  ─────────────────────────────────────┼──────────────────────────────
-            │  [[Community Features]] (Profiles)    [[Payment System]]
-            │  [[Admin Panel]]                      
-            │  [[Gamification Features]] (Badges)   
-            │  ─────────────────────────────────────┼──────────────────────────────
-            │                                       [[Affiliate and Growth]]
-            │                                       [[Find a Tutor]]
-            │                                       P2P Video Chat (Omegle-style)
+            │  [[Community Features]] (Crowdsourcing/Cards)  [[Mobile Version]] (PWA)
+            │  [[Affiliate and Growth]] (Viral Duels)        [[Basic Devops]] (CI/CD)
+            │  Public Profiles & Streaks                     [[Add additional Language Support]]
+            │  ─────────────────────────────────────────────┼──────────────────────────────
+            │  [[Admin Panel]]                              [[Payment System]]
+            │  [[Gamification Features]] (Badges)           
+            │  ─────────────────────────────────────────────┼──────────────────────────────
+            │                                               [[Find a Tutor]]
+            │                                               P2P Video Chat (Omegle-style)
             ▼
        LOW IMPACT
        ◄──────────────────────────────────────────────────────────────────────────►
        LOW EFFORT                                                     HIGH EFFORT
 ```
 
-| Quadrant | Items | Recommendation |
+| Quadrant | Items | Strategic Rationale |
 | :--- | :--- | :--- |
-| **Quick Wins** *(High Impact, Low/Med Effort)* | [[Add additional Language Support]], [[Community Features]] (Public Profiles) | **Execute immediately**. Validates core moat and expands market. |
-| **Major Strategic Projects** *(High Impact, Med/High Effort)* | [[Mobile Version]] (PWA focus), [[Basic Devops]] (CI/CD) | **Core technical investments**. Enables daily habit and stability. |
-| **Operational Fill-Ins** *(Med Impact, Low/Med Effort)* | [[Admin Panel]], [[Gamification Features]] (Phonetic Badges) | **Sprint 2**. Unblocks management and boosts day-30 retention. |
-| **Deferred / Avoid** *(Low Impact, High Effort)* | [[Payment System]], [[Affiliate and Growth]], [[Find a Tutor]], P2P Video Chat | **Pause/Shelve**. High operational drag; premature before PMF. |
+| **Viral Growth & Quick Wins** *(High Impact, Low/Med Effort)* | [[Community Features]] (Share Cards, Crowdsourcing), [[Affiliate and Growth]] (Duels, Referrals) | **Top Immediate Priority**. Creates organic K-factor acquisition and crowdsources phonetic approximations to unblock language scaling. |
+| **Major Foundations** *(High Impact, Med/High Effort)* | [[Basic Devops]] (CI/CD), [[Mobile Version]] (PWA), [[Add additional Language Support]] | **Core Platform Rigor**. Mobile unlocks daily practice; DevOps enables rapid shipping; crowdsourced data feeds back into language models. |
+| **Operational Fill-Ins** *(Med Impact, Low/Med Effort)* | [[Admin Panel]], [[Gamification Features]] (Phonetic Badges) | **Sprint 2**. Moderation and achievement loops. |
+| **Deferred / Avoid** *(Low Impact, High Effort)* | [[Payment System]] (Deferred until cloud launch), [[Find a Tutor]] (Avoid marketplace trap), P2P Video Chat | **Pause/Shelve**. High operational drag. |
 
 ---
 
-## 2. Multi-Perspective Evaluation
+## 2. Strategic Flywheel: Community Data & Network Effects
 
-### 1. [[Add additional Language Support]]
-- **Priority**: High (P1)
-- **Engineer**: Low–Med effort. Core engine is data-driven via `backend/data/languages/*.yaml`. Need espeak probe, YAML curation, and edge-tts voice config.
-- **Visionary**: Transformational. Core mission is phonetic approximation for non-Latin scripts (Thai, Vietnamese, Georgian). Directly widens the unique moat.
-- **Product**: Quick Win. High organic acquisition in underserved language communities.
+The fundamental insight from manual language curation (such as Thai) is that **a single developer cannot hand-craft cross-linguistic phonetic approximations for 50+ languages alone**. The community must power the engine:
 
-### 2. [[Basic Devops]]
-- **Priority**: High (P1)
-- **Engineer**: Med effort. Multi-stage Docker is ready. Need automated CI (GitHub Actions), test runner, and semantic release pipeline. Keep observability lightweight.
-- **Visionary**: High impact. Upholds brand principle: self-hosting is a first-class feature that must be rock solid.
-- **Product**: Major Enabler. Eliminates deploy friction and prevents regressions in the PyTorch/audio pipeline.
+```
+        1. Learner practices a word and scores their pronunciation
+                                │
+                                ▼
+        2. Learner shares a viral phonetic card or "Pronunciation Duel"
+                                │
+                                ▼
+        3. Native speakers / friends click the link to attempt the word
+                                │
+                                ▼
+        4. Community suggests / upvotes better phonetic spellings
+                                │
+                                ▼
+        5. Language YAML files improve automatically via crowd data
+```
 
-### 3. [[Mobile Version]]
-- **Priority**: High (P1)
-- **Engineer**: Med effort (PWA/Responsive Web) vs Very High (Native). Focus on mobile viewport and iOS Safari `MediaRecorder` audio recording compatibility.
-- **Visionary**: High impact. Daily pronunciation practice is an on-the-go micro-habit.
-- **Product**: Major Project. Unlocks daily spaced repetition retention loops.
+---
 
-### 4. [[Admin Panel]]
+## 3. Multi-Perspective Evaluation (Updated)
+
+### 1. [[Community Features]] & Crowdsourced Data
+- **Priority**: High (P1 — Immediate Up Next)
+- **Engineer**: Med effort. Build suggestion/voting schema in SQLite; generate dynamic social sharing cards (OpenGraph/Canvas) with deep links back to the practiced word.
+- **Visionary**: Transformational. Establishes a defensible, proprietary dataset of cross-linguistic phonetic approximations validated by thousands of native speakers.
+- **Product**: Core Viral Engine. Turns single-player pronunciation practice into an organic, multiplayer acquisition loop.
+
+### 2. [[Affiliate and Growth]] (Decoupled from Payments)
+- **Priority**: High (P1 — Immediate Up Next)
+- **Engineer**: Low–Med effort. Referral code attribution, "Pronunciation Duel" challenge links (`?c=challenge_id`), and beta language access gating.
+- **Visionary**: High impact. Word-of-mouth loops driven by competitive pronunciation challenges and social bragging rights.
+- **Product**: Quick Win. Drives organic top-of-funnel without requiring complex payment gateways.
+
+### 3. [[Basic Devops]]
+- **Priority**: High (P1 — Immediate Up Next)
+- **Engineer**: Med effort. GitHub Actions CI for running test suite, linting, and automated Docker image publishing.
+- **Visionary**: High impact. Operational foundation supporting community self-hosters and contributors.
+- **Product**: Major Enabler. Prevents regressions in the core audio scoring pipeline.
+
+### 4. [[Mobile Version]]
+- **Priority**: High (P1 — Immediate Up Next)
+- **Engineer**: Med effort (PWA/Responsive Web). Mobile viewport optimization and robust iOS/Android `MediaRecorder` audio capture.
+- **Visionary**: High impact. Viral share links received on mobile chat apps (WhatsApp, Telegram) must open seamlessly on mobile.
+- **Product**: Major Project. Spaced repetition and viral link opening are mobile-first behaviors.
+
+### 5. [[Add additional Language Support]] (Crowdsourced)
+- **Priority**: Medium (P2 — R&D / Crowdsourced Pipeline)
+- **Engineer**: High effort if done manually; significantly eased once the community suggestion/voting pipeline is live.
+- **Visionary**: Deep long-term moat. Community-contributed language packs allow scaling into Thai, Vietnamese, Georgian, and beyond.
+- **Product**: Shift strategy: Launch Thai with a "Community Beta / Help improve approximations" banner to let native speakers refine it.
+
+### 6. [[Admin Panel]]
 - **Priority**: Medium (P2)
-- **Engineer**: Low–Med effort. Requires role-based auth flag (`is_admin`), user audit endpoints, and a simple React dashboard.
-- **Visionary**: Neutral utility. Necessary for operators running instances for groups.
-- **Product**: Operational Enabler. Prerequisites for multi-tenant and support operations.
+- **Engineer**: Low–Med effort. Role-based auth, user management, and moderation of community-submitted phonetic suggestions.
+- **Visionary & Product**: Essential operational governance.
 
-### 5. [[Gamification Features]]
+### 7. [[Gamification Features]]
 - **Priority**: Medium (P2)
-- **Engineer**: Low–Med effort. Event hooks, user badge relations, and frontend achievement cards.
-- **Visionary**: Low–Med impact. Must focus strictly on phonetic milestones (e.g. "Mastered Palatalization") to avoid generic "AI slop".
-- **Product**: Retention Booster. Enhances streak motivation for day-14 and day-30 cohorts.
+- **Engineer & Product**: Low effort. Phonetic badges and shared milestone celebrations linked to viral cards.
 
-### 6. [[Community Features]]
-- **Priority**: Split — Public Profiles (P2 / High Value); P2P Video Chat (P4 / Paused).
-- **Engineer**: Public profiles are Low effort (read-only SQLite query). P2P Video is Very High effort (WebRTC signaling, STUN/TURN, moderation).
-- **Visionary**: Random Omegle chat degrades product trust and invites abuse. Public profile streak sharing reinforces accountability.
-- **Product**: Extract Public Profiles to P2; archive P2P Video Chat.
-
-### 7. [[Payment System]]
+### 8. [[Payment System]]
 - **Priority**: Low / Deferred (P3)
-- **Engineer**: High effort. Crypto webhook reconciliation, subscription states, and feature gating middleware.
-- **Visionary**: Medium impact. Premature paywalls before deep organic traction impede growth.
-- **Product**: Defer until cloud-hosted SaaS strategy is formalized.
-
-### 8. [[Affiliate and Growth]]
-- **Priority**: Low / Deferred (P3)
-- **Engineer**: Med–High effort. Hard dependency on [[Payment System]] and [[Admin Panel]].
-- **Visionary**: Low impact. Secondary distribution mechanic; pointless without a strong paid conversion funnel.
-- **Product**: Sequenced strictly after payments.
+- **Recommendation**: Defer until community size and organic retention justify a hosted commercial offering.
 
 ### 9. [[Find a Tutor]]
 - **Priority**: Paused (P4)
-- **Engineer**: Very High effort. Full two-sided marketplace (scheduling, availability, messaging, escrow).
-- **Visionary**: Low impact / Strategy Trap. Turns Spiik into a commodity marketplace competing against italki/Preply.
-- **Product**: Distraction from core AI phonetics engine. Deprioritize.
+- **Recommendation**: Avoid the two-sided marketplace trap. Focus resources on automated AI phonetics and crowdsourced community learning.
 
 ---
 
-## 3. Recommended Sprint Roadmap
+## 4. Revised Sprint Roadmap
 
-- **Sprint 1 (Immediate Execution)**:
-  1. Add Thai & Vietnamese language support via YAML definitions.
-  2. Implement GitHub Actions CI/CD for automated testing and image packaging.
-  3. Mobile PWA audit & mobile browser microphone testing.
-- **Sprint 2 (Retention & Management)**:
-  1. User Management Admin Panel.
-  2. Public Profiles with streak and sound-inventory sharing.
-  3. Phonetic milestone badges.
-- **Sprint 3 (Commercialization & Expansion)**:
-  1. Define self-hosted vs cloud tier boundaries.
-  2. Implement payment gateway and subscription tiers.
+- **Sprint 1 (Viral Growth & Community Data Engine)**:
+  1. **Viral Share Cards & Challenge Links**: 1-click shareable image/link for pronunciation scores and approximations ("Can you beat my score?").
+  2. **Crowdsourced Phonetic Suggestions**: "Suggest a better spelling" button on words and drill cards with upvoting.
+  3. **Basic DevOps Hardening**: Automated CI/CD (GitHub Actions) for backend tests and container builds.
+  4. **Mobile Audio Audit**: Ensure challenge links and recording work smoothly on iOS Safari and mobile Chrome.
+
+- **Sprint 2 (Crowdsourced Language Scaling & Community Profiles)**:
+  1. **Community Beta for Thai**: Release Thai with crowdsourced correction tools to let the community polish approximation rules.
+  2. **Public Profiles & Streak Bragging**: Shareable learner profiles `/u/:username` with social preview cards.
+  3. **Shared Word Decks**: Enable learners and tutors to create and publish curated word lists with deep links.
+
+- **Sprint 3 (Governance & Gamification)**:
+  1. **Admin Moderation Panel**: Approve/merge crowdsourced phonetic contributions into language YAML files.
+  2. **Phonetic Achievement Badges**: Milestone rewards tied to social share cards.

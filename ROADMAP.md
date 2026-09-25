@@ -193,7 +193,7 @@ The core loop: analyze → listen → record → drill.
 > language" is strongest (PRODUCT.md).
 
 - [ ] **As a learner, I can practice Thai, Vietnamese and Georgian**
-  - [ ] Thai
+  - [ ] Thai (Partially implemented - Needs polish with the approximate pronunciation and phonetic alphabet generation)
   - [ ] Vietnamese
   - [ ] Georgian
 

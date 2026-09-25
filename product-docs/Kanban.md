@@ -4,18 +4,19 @@ kanban-plugin: board
 
 ---
 
-## Up Next (P1: Immediate Priorities)
+## Up Next (P1: Immediate Priorities & Viral Growth)
 
-- [ ] [[Add additional Language Support]] #impact/high #effort/low-med
-- [ ] [[Basic Devops]] #impact/high #effort/med
-- [ ] [[Mobile Version]] #impact/high #effort/med
+- [ ] [[Community Features]] (Crowdsourced Data & Share Cards) #impact/high #effort/med #viral #crowdsourcing
+- [ ] [[Affiliate and Growth]] (Challenge Links & Social Loops) #impact/high #effort/low-med #viral
+- [ ] [[Basic Devops]] (CI/CD & Deployability) #impact/high #effort/med
+- [ ] [[Mobile Version]] (PWA & Audio Capture) #impact/high #effort/med
 
 
-## Exploring (P2: Secondary & Growth)
+## Exploring (P2: Secondary & Deep R&D)
 
-- [ ] [[Admin Panel]] #impact/med #effort/low-med
-- [ ] [[Gamification Features]] #impact/med #effort/low
-- [ ] [[Community Features]] #impact/med #effort/low
+- [ ] [[Add additional Language Support]] (Thai polish via Crowdsourcing) #impact/high #effort/high #priority/p2
+- [ ] [[Gamification Features]] (Phonetic Badges & Challenge Duels) #impact/med #effort/low
+- [ ] [[Admin Panel]] (User & Content Moderation) #impact/med #effort/low-med
 
 
 ## Shipped
@@ -25,7 +26,6 @@ kanban-plugin: board
 ## Paused (P3/P4: Deferred & High Overhead)
 
 - [ ] [[Payment System]] #impact/med #effort/high
-- [ ] [[Affiliate and Growth]] #impact/low-med #effort/med-high
 - [ ] [[Find a Tutor]] #impact/low #effort/very-high
 
 
