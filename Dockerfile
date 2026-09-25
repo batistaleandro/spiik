@@ -52,10 +52,12 @@ COPY backend/tests backend/tests
 COPY --from=frontend-build /app/frontend/dist frontend/dist
 
 # bake the wav2vec2 phoneme model + the Marian translation models
-# (offline phrase translation) — skipped when BAKE_MODELS=false
+# (offline phrase translation) — skipped when BAKE_MODELS=false.
+# PYTHONPATH: the app package lives at /opt/spiik/backend/app and the
+# working directory here is /opt/spiik
 RUN if [ "$BAKE_MODELS" = "true" ]; then \
         python -c "from huggingface_hub import snapshot_download; snapshot_download('facebook/wav2vec2-lv-60-espeak-cv-ft')" \
-        && python -c "from app.translate_local import MODEL_IDS; \
+        && PYTHONPATH=backend python -c "from app.translate_local import MODEL_IDS; \
 from huggingface_hub import snapshot_download; \
 [snapshot_download(model_id) for model_id in MODEL_IDS]"; \
     fi
