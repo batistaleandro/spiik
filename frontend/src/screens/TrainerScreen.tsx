@@ -20,13 +20,20 @@ import { useRecorder } from "../useRecorder";
 
 const DEFAULT_NATIVE = "pt-br";
 const DEFAULT_TARGET = "en-us";
+const DEFAULT_WORD = "creation";
 
-// the chosen language pair survives reloads
+// the chosen language pair and the train inputs survive reloads
 const NATIVE_KEY = "spiik_native";
 const TARGET_KEY = "spiik_target";
+const WORD_KEY = "spiik_word";
+const INPUT_LANG_KEY = "spiik_input_lang";
 
 function storedLang(key: string, fallback: string): string {
   return localStorage.getItem(key) ?? fallback;
+}
+
+function storedInputLang(): "target" | "native" {
+  return localStorage.getItem(INPUT_LANG_KEY) === "native" ? "native" : "target";
 }
 
 function LanguageSelect({
@@ -143,8 +150,12 @@ export default function TrainerScreen() {
   const [target, setTarget] = useState(() =>
     storedLang(TARGET_KEY, DEFAULT_TARGET)
   );
-  const [inputLang, setInputLang] = useState<"target" | "native">("target");
-  const [word, setWord] = useState("creation");
+  const [inputLang, setInputLang] = useState<"target" | "native">(() =>
+    storedInputLang()
+  );
+  const [word, setWord] = useState(() =>
+    storedLang(WORD_KEY, DEFAULT_WORD)
+  );
   const [analysis, setAnalysis] = useState<AnalyzeResult | null>(null);
   const [feedback, setFeedback] = useState<AssessResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -190,6 +201,14 @@ export default function TrainerScreen() {
   useEffect(() => {
     localStorage.setItem(TARGET_KEY, target);
   }, [target]);
+
+  useEffect(() => {
+    localStorage.setItem(WORD_KEY, word);
+  }, [word]);
+
+  useEffect(() => {
+    localStorage.setItem(INPUT_LANG_KEY, inputLang);
+  }, [inputLang]);
 
   const doAnalyze = useCallback(
     async (text?: string, langOverride?: "target" | "native") => {
