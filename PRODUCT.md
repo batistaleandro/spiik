@@ -4,7 +4,20 @@
 
 ## Platform
 
-web
+- web
+- mobile (future)
+
+### Statement
+There are many AI slop products on the market. Even positioning this as an MVP, requires it to be polished and offer a full range of features that introduce this not only as an app, but as a LANGUAGE LEARNING PLATFORM. 
+
+The goal is to start targeting some niche languages with non-latin alphabets, since this is were the benefit of "reading in your language" is the strongest.
+
+Some of the languages that this app aims to cover:
+- Russian (implemented)
+- Thai (future)
+- Vietnamese (future)
+- Georgian (future)
+
 
 ## Users
 
@@ -56,6 +69,7 @@ Constraints:
 - README.md documents the mechanism, stack, deployment, and known limitations.
 - Per-language data files at `backend/data/languages/*.yaml` (real phoneme inventories, orthographies, substitution preferences, drill words).
 - Original architecture/plan document: `.zcode/plans/plan-sess_1e7fd6a3-e6eb-4ded-bfa1-9e6cfe5cc435.md`.
+- Product roadmap with shipped and planned user stories: `ROADMAP.md`.
 - Working pytest suite (46 passing) and a runnable Docker deployment.
 - No marketing assets, testimonials, user research, or press exist — future design work must not fabricate them.
 
