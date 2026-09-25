@@ -24,6 +24,7 @@ import requests
 
 from app.core.languages import Language
 from app import translate_local
+from app.metrics import TRANSLATIONS
 
 _TIMEOUT_S = 5.0
 # the first local call in a process loads model weights (~seconds);
@@ -155,7 +156,11 @@ def _run_provider(
     # first_only exists to pick one candidate word ("мир, свет" → "мир");
     # phrases must survive intact
     first_only = allow_echo and " " not in text.strip()
-    return clean_translation(box[0], text, allow_echo=allow_echo, first_only=first_only)
+    result = clean_translation(
+        box[0], text, allow_echo=allow_echo, first_only=first_only
+    )
+    TRANSLATIONS.labels(name, "ok" if result else "empty").inc()
+    return result
 
 
 def _google(text: str, src: str, dst: str) -> str | None:

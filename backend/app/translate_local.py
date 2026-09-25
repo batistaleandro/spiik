@@ -15,7 +15,10 @@ cache the translator reports unavailable and the hosted chain takes over
 from __future__ import annotations
 
 import threading
+import time
 from collections import OrderedDict
+
+from app.metrics import MODEL_LOADS, MODEL_LOAD_SECONDS
 
 # (source, target) google codes → (model id, source token, target token).
 # Tokens are the `>>id<<` sentence-initial labels some grouped Marian
@@ -67,9 +70,16 @@ class MarianTranslator:
     def _load(self, model_id: str):
         from transformers import MarianMTModel, MarianTokenizer
 
-        tokenizer = MarianTokenizer.from_pretrained(model_id)
-        model = MarianMTModel.from_pretrained(model_id)
+        start = time.perf_counter()
+        try:
+            tokenizer = MarianTokenizer.from_pretrained(model_id)
+            model = MarianMTModel.from_pretrained(model_id)
+        except Exception:
+            MODEL_LOADS.labels(model_id, "fail").inc()
+            raise
         model.eval()
+        MODEL_LOAD_SECONDS.labels(model_id).observe(time.perf_counter() - start)
+        MODEL_LOADS.labels(model_id, "ok").inc()
         return model, tokenizer
 
     def _get(self, model_id: str):

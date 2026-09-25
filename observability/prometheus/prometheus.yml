@@ -1,0 +1,12 @@
+# spiik — Prometheus scrape configuration.
+# Scrapes the spiik backend's /metrics endpoint every 15 s.
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: spiik
+    metrics_path: /metrics
+    static_configs:
+      # `spiik` resolves inside the compose network; for a remote host
+      # replace it with the host:port spiik is reachable at
+      - targets: ["spiik:8000"]

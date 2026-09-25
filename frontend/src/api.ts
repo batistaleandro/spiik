@@ -228,6 +228,17 @@ async function authJson<T>(url: string, init?: RequestInit): Promise<T> {
 
 // ---- phonetics endpoints --------------------------------------------------
 
+export interface HealthInfo {
+  status: string;
+  version: string;
+  engine: string;
+}
+
+export async function fetchHealth(): Promise<HealthInfo> {
+  const res = await fetch("/api/health");
+  return jsonOrThrow<HealthInfo>(res);
+}
+
 export async function fetchLanguages(): Promise<LanguageInfo[]> {
   const res = await fetch("/api/languages");
   return jsonOrThrow<LanguageInfo[]>(res);
