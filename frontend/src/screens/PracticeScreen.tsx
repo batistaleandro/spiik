@@ -4,7 +4,6 @@ import {
   assess,
   fetchPractice,
   reviewWord,
-  tts,
   type AssessResult,
   type PracticeQueue,
   type Rating,
@@ -59,15 +58,6 @@ export default function PracticeScreen() {
 
   const card = queue && idx < queue.length ? queue[idx] : null;
   const done = queue !== null && !card;
-
-  const play = useCallback(async (text: string, target: string) => {
-    try {
-      const url = await tts(text, target);
-      new Audio(url).play();
-    } catch {
-      /* audio is best-effort */
-    }
-  }, []);
 
   const doRate = useCallback(
     async (r: Rating) => {
@@ -198,30 +188,15 @@ export default function PracticeScreen() {
           <span className={`state-pill ${card!.srs.state}`}>{card!.srs.state}</span>
         </div>
 
-        <h2 className="practice-word">{card!.text}</h2>
-        {!revealed && (
-          <p className="practice-hint">
-            say it out loud{card!.translated ? " and recall the meaning" : ""}, then
-            check yourself
-          </p>
-        )}
-
-        {revealed ? (
+        {!revealed ? (
+          // side A: the word, how to say it, and the recording
           <>
-            <div className="practice-answer">
-              {card!.translated && (
-                <span className="translation">{card!.translated}</span>
-              )}
-              <span className="ipa">/ {card!.expected_ipa.join(" ")} /</span>
-            </div>
+            <h2 className="practice-word">{card!.text}</h2>
             <p className="approx-plain">{card!.approximation}</p>
             <p className="approx-caption">how it sounds in your language</p>
             <MissingBadges missing={card!.missing_sounds} />
 
             <div className="actions">
-              <button className="listen" onClick={() => void play(card!.text, card!.target)}>
-                🔊 Listen
-              </button>
               {scoring ? (
                 <button className="record scoring" disabled>
                   checking…
@@ -232,15 +207,33 @@ export default function PracticeScreen() {
                 </button>
               ) : (
                 <button className="record" onClick={() => void startRecording()}>
-                  🎙 Record &amp; check
+                  🎙 Record
                 </button>
               )}
+              <button onClick={() => setRevealed(true)}>Show answer</button>
             </div>
             {recording && (
               <p className="recording-note">listening… say the word, then stop</p>
             )}
+            {feedback && !recording && !scoring && (
+              <p className="recording-note">
+                recording checked — show the answer for your score
+              </p>
+            )}
+          </>
+        ) : (
+          // side B: the meaning, the recording result, and self-evaluation
+          <>
+            <h2 className="practice-word">
+              {card!.translated ?? card!.text}
+            </h2>
+            {card!.translated && (
+              <div className="practice-answer">
+                <span className="translation">{card!.text}</span>
+              </div>
+            )}
 
-            {feedback && (
+            {feedback ? (
               <div className="practice-feedback">
                 <Feedback result={feedback} />
                 {feedback.recognized_ipa.length > 0 && (
@@ -249,6 +242,10 @@ export default function PracticeScreen() {
                   </p>
                 )}
               </div>
+            ) : (
+              <p className="practice-hint">
+                no recording on this card — rate how well you knew it
+              </p>
             )}
 
             <div className="rate-row">
@@ -268,13 +265,6 @@ export default function PracticeScreen() {
             </div>
             <p className="rate-caption">how well did you know it?</p>
           </>
-        ) : (
-          <div className="actions">
-            <button className="listen" onClick={() => void play(card!.text, card!.target)}>
-              🔊 Listen
-            </button>
-            <button onClick={() => setRevealed(true)}>Show answer</button>
-          </div>
         )}
       </section>
     </main>
