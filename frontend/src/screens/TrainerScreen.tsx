@@ -16,17 +16,25 @@ import {
 import { useAuth } from "../auth-context";
 import Feedback from "../components/Feedback";
 import MissingBadges from "../components/MissingBadges";
+import PronunciationFeedback from "../components/PronunciationFeedback";
 import { useRecorder } from "../useRecorder";
 
 const DEFAULT_NATIVE = "pt-br";
 const DEFAULT_TARGET = "en-us";
+const DEFAULT_WORD = "creation";
 
-// the chosen language pair survives reloads
+// the chosen language pair and the train inputs survive reloads
 const NATIVE_KEY = "spiik_native";
 const TARGET_KEY = "spiik_target";
+const WORD_KEY = "spiik_word";
+const INPUT_LANG_KEY = "spiik_input_lang";
 
 function storedLang(key: string, fallback: string): string {
   return localStorage.getItem(key) ?? fallback;
+}
+
+function storedInputLang(): "target" | "native" {
+  return localStorage.getItem(INPUT_LANG_KEY) === "native" ? "native" : "target";
 }
 
 function LanguageSelect({
@@ -143,8 +151,12 @@ export default function TrainerScreen() {
   const [target, setTarget] = useState(() =>
     storedLang(TARGET_KEY, DEFAULT_TARGET)
   );
-  const [inputLang, setInputLang] = useState<"target" | "native">("target");
-  const [word, setWord] = useState("creation");
+  const [inputLang, setInputLang] = useState<"target" | "native">(() =>
+    storedInputLang()
+  );
+  const [word, setWord] = useState(() =>
+    storedLang(WORD_KEY, DEFAULT_WORD)
+  );
   const [analysis, setAnalysis] = useState<AnalyzeResult | null>(null);
   const [feedback, setFeedback] = useState<AssessResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -190,6 +202,14 @@ export default function TrainerScreen() {
   useEffect(() => {
     localStorage.setItem(TARGET_KEY, target);
   }, [target]);
+
+  useEffect(() => {
+    localStorage.setItem(WORD_KEY, word);
+  }, [word]);
+
+  useEffect(() => {
+    localStorage.setItem(INPUT_LANG_KEY, inputLang);
+  }, [inputLang]);
 
   const doAnalyze = useCallback(
     async (text?: string, langOverride?: "target" | "native") => {
@@ -366,11 +386,19 @@ export default function TrainerScreen() {
                 </span>
               )}
             </div>
-            <div className="approx">
-              {analysis.chunks.map((c, i) => (
-                <ChunkChip key={i} chunk={c} />
-              ))}
-            </div>
+            <PronunciationFeedback
+              key={`${analysis.native.code}|${analysis.target.code}|${analysis.text}`}
+              native={analysis.native.code}
+              target={analysis.target.code}
+              text={analysis.text}
+              systemApproximation={analysis.approximation}
+            >
+              <div className="approx">
+                {analysis.chunks.map((c, i) => (
+                  <ChunkChip key={i} chunk={c} />
+                ))}
+              </div>
+            </PronunciationFeedback>
             <p className="approx-caption">
               how it sounds to you, written in {analysis.native.name} · underlined = stressed
             </p>

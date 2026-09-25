@@ -94,3 +94,67 @@ class ReviewLog(Base):
     state: Mapped[str] = mapped_column(String(10))
 
     word: Mapped["Word"] = relationship(back_populates="reviews")
+
+
+class PronunciationSuggestion(Base):
+    """A user-suggested approximate pronunciation, shared across the userbase.
+
+    `word_text` and `suggested_text` are casefolded so that the community key
+    (language pair + word) matches the way `save_word` deduplicates words.
+    """
+
+    __tablename__ = "pronunciation_suggestions"
+    __table_args__ = (
+        UniqueConstraint(
+            "native_lang", "target_lang", "word_text", "suggested_text",
+            name="uq_pron_suggestion",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    native_lang: Mapped[str] = mapped_column(String(20))
+    target_lang: Mapped[str] = mapped_column(String(20))
+    word_text: Mapped[str] = mapped_column(String(255), index=True)
+    suggested_text: Mapped[str] = mapped_column(String(255))
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    # user ids sampled into the test group at creation time; the author always
+    # sees their own suggestion regardless of this list
+    audience: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow)
+
+
+class PronunciationVote(Base):
+    """A user's thumbs up/down on a suggested pronunciation."""
+
+    __tablename__ = "pronunciation_votes"
+    __table_args__ = (
+        UniqueConstraint("suggestion_id", "user_id", name="uq_pron_vote"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    suggestion_id: Mapped[int] = mapped_column(
+        ForeignKey("pronunciation_suggestions.id"), index=True
+    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    vote: Mapped[str] = mapped_column(String(4))  # up | down
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow)
+
+
+class PronunciationSystemVote(Base):
+    """A user's thumbs up/down on the system-generated pronunciation of a word."""
+
+    __tablename__ = "pronunciation_system_votes"
+    __table_args__ = (
+        UniqueConstraint(
+            "native_lang", "target_lang", "word_text", "user_id",
+            name="uq_pron_system_vote",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    native_lang: Mapped[str] = mapped_column(String(20))
+    target_lang: Mapped[str] = mapped_column(String(20))
+    word_text: Mapped[str] = mapped_column(String(255), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    vote: Mapped[str] = mapped_column(String(4))  # up | down
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow)

@@ -20,6 +20,7 @@ from app.db import init_db
 from app.engines.base import get_engine
 from app.pipeline import run_analysis
 from app.routers.auth import router as auth_router
+from app.routers.pronunciation import router as pronunciation_router
 from app.routers.words import router as words_router
 from app.tts import synthesize
 
@@ -28,6 +29,7 @@ init_db()
 app = FastAPI(title="spiik", description="Pronunciation training via IPA approximation")
 app.include_router(auth_router)
 app.include_router(words_router)
+app.include_router(pronunciation_router)
 
 app.add_middleware(
     CORSMiddleware,
