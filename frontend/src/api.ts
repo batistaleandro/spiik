@@ -114,7 +114,37 @@ export interface SavedWord {
   missing_sounds: MissingSound[];
   created_at: string;
   srs: SrsState;
+  pronunciation?: PronunciationFeedback;
 }
+
+// ---- pronunciation feedback -----------------------------------------------
+
+export interface PronunciationSuggestionInfo {
+  id: number;
+  text: string;
+  up: number;
+  down: number;
+  rate: number;
+  my_vote: "up" | "down" | null;
+  mine: boolean;
+  in_audience: boolean;
+  promoted: boolean;
+}
+
+export interface PronunciationFeedback {
+  native: string;
+  target: string;
+  text: string;
+  system: { up: number; down: number; my_vote: "up" | "down" | null };
+  suggestions: PronunciationSuggestionInfo[];
+  effective: {
+    source: "system" | "suggestion";
+    text: string | null;
+    suggestion_id: number | null;
+  };
+}
+
+export type PronunciationVote = "up" | "down";
 
 export interface PracticeQueue {
   items: SavedWord[];
@@ -356,4 +386,48 @@ export async function reviewWord(
 
 export async function fetchProgress(): Promise<Progress> {
   return authJson<Progress>("/api/progress");
+}
+
+// ---- pronunciation feedback ------------------------------------------------
+
+export async function fetchPronunciationFeedback(
+  native: string,
+  target: string,
+  text: string
+): Promise<PronunciationFeedback> {
+  const params = new URLSearchParams({ native, target, text });
+  return authJson<PronunciationFeedback>(`/api/pronunciation/feedback?${params}`);
+}
+
+export async function votePronunciation(
+  native: string,
+  target: string,
+  text: string,
+  suggestionId: number | null,
+  vote: PronunciationVote
+): Promise<PronunciationFeedback> {
+  return authJson<PronunciationFeedback>("/api/pronunciation/vote", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      native,
+      target,
+      text,
+      suggestion_id: suggestionId,
+      vote,
+    }),
+  });
+}
+
+export async function suggestPronunciation(
+  native: string,
+  target: string,
+  text: string,
+  suggestedText: string
+): Promise<PronunciationFeedback> {
+  return authJson<PronunciationFeedback>("/api/pronunciation/suggest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ native, target, text, suggested_text: suggestedText }),
+  });
 }

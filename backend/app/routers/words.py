@@ -16,6 +16,7 @@ from app.auth import get_current_user
 from app.db import get_db
 from app.models import ReviewLog, User, Word, iso, utcnow
 from app.pipeline import run_analysis
+from app.pronunciation import key_for, resolve_pronunciation, resolve_pronunciation_batch
 from app.srs import apply_review, confidence, next_intervals
 
 router = APIRouter(prefix="/api", tags=["words"])
@@ -38,8 +39,8 @@ class ReviewRequest(BaseModel):
     rating: Literal["again", "hard", "good", "easy"]
 
 
-def card_out(word: Word) -> dict:
-    return {
+def card_out(word: Word, pronunciation: dict | None = None) -> dict:
+    out = {
         "id": word.id,
         "text": word.text,
         "translated": word.translated,
@@ -62,6 +63,22 @@ def card_out(word: Word) -> dict:
             "next_intervals": next_intervals(word),
         },
     }
+    if pronunciation is not None:
+        out["pronunciation"] = pronunciation
+    return out
+
+
+def cards_out(db: Session, user: User, words: list[Word]) -> list[dict]:
+    """Serialize cards with the community-resolved pronunciation on each."""
+    resolved = resolve_pronunciation_batch(
+        db,
+        user,
+        [(w.native_lang, w.target_lang, w.text, w.approximation) for w in words],
+    )
+    return [
+        card_out(w, resolved[key_for(w.native_lang, w.target_lang, w.text)])
+        for w in words
+    ]
 
 
 @router.post("/words")
@@ -104,7 +121,13 @@ def save_word(
         existing.missing_sounds = result["missing_sounds"]
         db.commit()
         db.refresh(existing)
-        return card_out(existing)
+        return card_out(
+            existing,
+            resolve_pronunciation(
+                db, user, existing.native_lang, existing.target_lang,
+                existing.text, existing.approximation,
+            ),
+        )
 
     result = run_analysis(
         req.native,
@@ -133,7 +156,16 @@ def save_word(
         db.rollback()
         raise HTTPException(409, f"“{text}” is already in your words") from None
     db.refresh(word)
-    return JSONResponse(status_code=201, content=card_out(word))
+    return JSONResponse(
+        status_code=201,
+        content=card_out(
+            word,
+            resolve_pronunciation(
+                db, user, word.native_lang, word.target_lang,
+                word.text, word.approximation,
+            ),
+        ),
+    )
 
 
 @router.get("/words")
@@ -144,7 +176,7 @@ def list_words(
     words = db.scalars(
         select(Word).where(Word.user_id == user.id).order_by(Word.due_at, Word.id)
     ).all()
-    return [card_out(w) for w in words]
+    return cards_out(db, user, words)
 
 
 @router.delete("/words/{word_id}", status_code=204)
@@ -202,7 +234,7 @@ def practice_queue(
         )
     )
     return {
-        "items": [card_out(w) for w in due + fresh],
+        "items": cards_out(db, user, due + fresh),
         "counts": {"due": len(due), "new": len(fresh)},
         "next_due": iso(next_due),
     }
@@ -234,7 +266,13 @@ def review_word(
     )
     db.commit()
     db.refresh(word)
-    return card_out(word)
+    return card_out(
+        word,
+        resolve_pronunciation(
+            db, user, word.native_lang, word.target_lang,
+            word.text, word.approximation,
+        ),
+    )
 
 
 @router.get("/progress")
