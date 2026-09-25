@@ -22,6 +22,9 @@ Any language pair works out of the box: the engine is driven by per-language
 data files (phoneme inventory, native orthography, substitution preferences),
 not per-pair tables.
 
+Shipped features and what's planned next live in the
+[roadmap](ROADMAP.md).
+
 ## Stack
 
 | Layer      | Technology                                                          |
