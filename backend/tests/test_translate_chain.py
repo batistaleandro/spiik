@@ -26,6 +26,76 @@ def test_parse_gtx_handles_garbage():
     assert tr._parse_gtx({"sentences": [{"orig": "no trans field"}]}) is None
 
 
+# ---- dict-chrome-ex JSON parser ------------------------------------------------
+
+
+def test_parse_chrome_joins_plain_segments():
+    assert tr._parse_chrome(["บ้าน"]) == "บ้าน"
+    assert tr._parse_chrome(["สวัสดี", " ครับ"]) == "สวัสดี ครับ"
+
+
+def test_parse_chrome_takes_first_cell_of_rows():
+    assert tr._parse_chrome([["บ้าน", "house"], ["ที", "team"]]) == "บ้านที"
+
+
+def test_parse_chrome_handles_garbage():
+    assert tr._parse_chrome(None) is None
+    assert tr._parse_chrome({}) is None
+    assert tr._parse_chrome([]) is None
+    assert tr._parse_chrome([[None, "house"]]) is None
+
+
+def test_google_falls_back_to_chrome_endpoint(monkeypatch):
+    # gtx rate-limits hard by IP (429); the Chrome endpoint has a
+    # separate quota and must take over
+    class RateLimited:
+        def raise_for_status(self):
+            import requests
+
+            raise requests.HTTPError("429")
+
+        def json(self):
+            return {}
+
+    def chrome_ok(url, **kwargs):
+        class Ok:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return ["บ้าน"]
+
+        assert "clients5.google.com" in url
+        assert kwargs["params"]["tl"] == "th"
+        return Ok()
+
+    monkeypatch.setattr(
+        tr.requests,
+        "get",
+        lambda url, **kw: (
+            RateLimited() if "translate.googleapis.com" in url else chrome_ok(url, **kw)
+        ),
+    )
+    assert tr._google("house", "en", "th") == "บ้าน"
+
+
+def test_google_prefers_gtx_when_it_works(monkeypatch):
+    def ok(url, **kwargs):
+        class Ok:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                if "translate.googleapis.com" in url:
+                    return {"sentences": [{"trans": "บ้าน"}]}
+                raise AssertionError("chrome endpoint should not be called")
+
+        return Ok()
+
+    monkeypatch.setattr(tr.requests, "get", ok)
+    assert tr._google("house", "en", "th") == "บ้าน"
+
+
 # ---- Marian pair plans --------------------------------------------------------
 
 
@@ -53,6 +123,23 @@ def test_unsupported_pair_pivots_through_english():
 
 def test_unsupported_pair_without_pivot_is_empty():
     assert translate_local.pair_plan("de", "ja") == []
+
+
+def test_thai_to_english_is_a_direct_pair():
+    assert translate_local.pair_plan("th", "en") == [
+        ("Helsinki-NLP/opus-mt-th-en", None, None)
+    ]
+
+
+def test_thai_to_other_languages_pivot_through_english():
+    plan = translate_local.pair_plan("th", "de")
+    assert plan == [
+        ("Helsinki-NLP/opus-mt-th-en", None, None),
+        ("Helsinki-NLP/opus-mt-en-de", None, None),
+    ]
+    # no en→th Marian model exists: the hosted chain covers that direction
+    assert translate_local.pair_plan("en", "th") == []
+    assert translate_local.pair_plan("pt", "th") == []
 
 
 # ---- provider chain ordering ---------------------------------------------------

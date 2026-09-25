@@ -1,0 +1,188 @@
+# Thai — espeak th conventions
+code: th
+name: Thai
+espeak_voice: th
+translate:
+  google: th
+  mymemory: th-TH
+tts_voice: th-TH-PremwadeeNeural
+
+consonants: [p, b, t, d, k, ɡ, ʔ, ph, th, kh, ch, f, s, h, m, n, ŋ, nɡ, l, r, ɹ, j, w]
+vowels: [a, i, u, e, o, ɜ, ɛ, ɔ, ɯ, ɤ, eː, uː, iː, oː, aɪ, aʊ]
+
+# How Thai natively writes each of its own sounds.
+orthography:
+  # Vowels
+  a: า
+  i: ิ
+  u: ุ
+  e: เ
+  o: โ
+  ɜ: เออ
+  ɛ: แ
+  ɔ: อ
+  ɯ: ึ
+  ɤ: เออ
+  eː: เ
+  uː: ู
+  iː: ี
+  oː: โ
+  aɪ: ไอ
+  aʊ: เอา
+  # Consonants
+  p: ป
+  b: บ
+  t: ต
+  d: ด
+  k: ก
+  ɡ: ก
+  ʔ: อ
+  ph: พ
+  th: ท
+  kh: ค
+  ch: ช
+  f: ฟ
+  s: ส
+  h: ห
+  m: ม
+  n: น
+  ŋ: ง
+  nɡ: ง
+  l: ล
+  r: ร
+  ɹ: ร
+  j: ย
+  w: ว
+
+# Foreign sounds → preferred native substitutes (checked in order).
+substitutions:
+  # English
+  θ: [s, th, t]
+  ð: [d, z]
+  w: [w]
+  ɹ: [r, l]
+  ɾ: [r, l]
+  ɚ: [a, r]
+  ɜː: [ɜ, a]
+  ə: [a, ɜ]
+  æ: [ɛ, a]
+  ɪ: [i]
+  ʊ: [u]
+  ɔː: [ɔ, o]
+  ɑː: [a]
+  dʒ: [ch]
+  tʃ: [ch]
+  h: [h]
+  ŋ: [nɡ, ŋ, n]
+  ɔɪ: [ɔ, j]
+  v: [w, f]
+  z: [s]
+  ʃ: [ch, s]
+  ʒ: [ch, s]
+  # Portuguese
+  ɐ: [a]
+  ɐ̃: [a]
+  ɐ̃ʊ̃: [a]
+  ẽ: [e]
+  ĩ: [i]
+  õ: [o]
+  ũ: [u]
+  ɔ̃: [o]
+  ɑ̃: [a]
+  ɛ̃: [ɛ]
+  œ̃: [ɛ]
+  ʎ: [l, j]
+  ɲ: [n, j]
+  ʁ: [r, h]
+  ʀ: [r, h]
+  # French / German
+  ø: [e, o]
+  œ: [ɛ, o]
+  øː: [e, o]
+  yː: [i, u]
+  ʏ: [i]
+  ç: [h, s]
+  pf: [p, f]
+  dz: [ch, s]
+  ɥ: [j]
+  ɜ: [ɜ, a]
+  ɞ: [ɜ, a]
+  ʉ: [u]
+  ɤ: [ɜ, o]
+  ɕ: [ch, s]
+  β: [b]
+  ɣ: [k]
+  ɖ: [d]
+  ʈ: [t]
+  # Russian
+  ɭ: [l]
+  ʲ: [j]
+  ʑ: [ch, s]
+  ɑ: [a]
+  ʌ: [a]
+  ts: [ch, t]
+  y: [i]
+
+# Sounds that don't exist in Thai but reduce gracefully to one native sound.
+minor_foreign: [ɪ, ʊ, æ, ʌ, ə, ɡ]
+
+# wav2vec2/espeak-version token drift: what the model emits vs what espeak-ng
+# G2P produces for the same sound. Expanded before alignment.
+recognized_aliases:
+  ŋ: [nɡ]
+  tɕ: [ch]
+  tɕʰ: [ch]
+  kʰ: [kh]
+  tʰ: [th]
+  pʰ: [ph]
+  ɯ: [u]
+  ɯː: [uː]
+  ɤ: [ɜ]
+  ɤː: [ɜ]
+  ɔ: [o]
+  ɛ: [e]
+
+# How foreign sounds are written natively when one substitute letter isn't
+# enough (diphthongs, affricates, nasal combos).
+foreign_display:
+  eɪ: เอ
+  aɪ: ไอ
+  aʊ: เอา
+  oʊ: โอ
+  əʊ: โอ
+  ɔɪ: ออย
+  iː: ี
+  uː: ู
+  dʒ: จ
+  ŋ: ง
+  θ: ซ
+  ð: ด
+  v: ว
+  z: ซ
+  ʃ: ช
+  ʒ: ช
+  tʃ: ช
+
+# Words for pronunciation drills, keyed by the sound they contain.
+drill_words:
+  kh: [คน, ข้าว, คิด]
+  th: [ทำ, ทาง, เธอ]
+  ph: [พูด, เพื่อน, พ่อ]
+  ch: [ใช่, ช้า, ใจ]
+  k: [กิน, ไก่, เก้า]
+  t: [ตา, โต๊ะ, ตลาด]
+  p: [ไป, ปาก, ปลา]
+  nɡ: [งาน, เงิน, งู]
+  h: [หู, หนาว, ห้า]
+  m: [แม่, มี, มา]
+  n: [น้ำ, นอน, นั่ง]
+  l: [ลม, เล่น, ลูก]
+  r: [รัก, รถ, ร้อน]
+  s: [สวย, สบายดี, สอน]
+  w: [วัน, วิ่ง, วัว]
+  j: [ใหญ่, ยาย, ยา]
+  d: [ดี, ดิน, ดู]
+  b: [บ้าน, บิน, บอก]
+  a: [มา, กา, ตา]
+  i: [กิน, ดิน, บิน]
+  u: [ดู, หู, รู]

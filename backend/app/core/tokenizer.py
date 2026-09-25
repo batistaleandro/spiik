@@ -66,7 +66,11 @@ DEFAULT_MULTI = [
     "dʑ",
     "ʈʂ",
     "ɖʐ",
-    "ɐ̃ʊ̃",
+    "kh",
+    "th",
+    "ph",
+    "ch",
+    "nɡ",
 ]
 
 
@@ -101,6 +105,11 @@ def tokenize_ipa(text: str, inventory: list[str] | None = None) -> list[Token]:
         ch = text[i]
         if ch in (PRIMARY_STRESS, SECONDARY_STRESS, EXTRA_PRIMARY_STRESS, EXTRA_SECONDARY_STRESS):
             pending_stress = 1 if ch in (PRIMARY_STRESS, EXTRA_PRIMARY_STRESS) else 2
+            i += 1
+            continue
+        if ch.isdigit():
+            # In tonal languages (Thai, Vietnamese), espeak marks syllable tones
+            # with ASCII digits (e.g. k'i2n for กิน); strip them from phoneme tokens.
             i += 1
             continue
         if ch.isspace():

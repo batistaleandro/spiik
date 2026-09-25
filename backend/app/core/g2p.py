@@ -10,7 +10,7 @@ from phonemizer.backend import EspeakBackend
 from app.core.languages import Language
 from app.core.tokenizer import Token, tokenize_ipa
 
-_WORD_SPLIT = re.compile(r"([\w'’-]+)", re.UNICODE)
+_WORD_SPLIT = re.compile(r"([\w\u0300-\u036f\u0e00-\u0e7f'’-]+)", re.UNICODE)
 
 
 class G2P:
