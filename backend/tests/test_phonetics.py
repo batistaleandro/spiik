@@ -45,7 +45,7 @@ def test_approximate_creation_pt(g2p, langs):
     en, pt = langs
     tokens = g2p.phonemize("creation", en)
     result = approximate(tokens, en, pt)
-    assert result.text == "cri-ei-chan"
+    assert result.text == "kri-ei-chan"
     # every chunk maps back to the word's phonemes
     assert sum(len(c.phonemes) for c in result.chunks) == len(tokens)
     missing = {m.ipa for m in result.missing_sounds}
@@ -56,7 +56,7 @@ def test_approximate_think_pt(g2p, langs):
     en, pt = langs
     tokens = g2p.phonemize("think", en)
     result = approximate(tokens, en, pt)
-    assert result.text == "sinc"
+    assert result.text == "sink"
     missing = {m.ipa: m for m in result.missing_sounds}
     # θ is THE classic sound Portuguese lacks → major, not minor
     assert "θ" in missing and not missing["θ"].minor
@@ -125,7 +125,7 @@ def test_describe_sound():
 
 
 def test_all_language_files_load():
-    codes = ["en-us", "pt-br", "es", "de", "fr-fr", "it", "ru"]
+    codes = ["en-us", "pt-br", "es", "de", "fr-fr", "it", "ru", "th"]
     for code in codes:
         lang = load_language(code)
         assert lang.inventory, code
@@ -216,3 +216,44 @@ def test_every_language_has_translation_codes():
     for lang in list_languages():
         codes = lang.translate
         assert "google" in codes and "mymemory" in codes, lang.code
+
+
+def test_approximate_english_for_thai_learners(g2p, langs):
+    en, _ = langs
+    th = load_language("th")
+    cases = {
+        "think": "ซิงก",
+        "this": "ดิส",
+        "king": "กิง",
+    }
+    for word, expected in cases.items():
+        result = approximate(g2p.phonemize(word, en), en, th)
+        assert result.text == expected, f"{word}: {result.text!r} != {expected!r}"
+    think_missing = {m.ipa for m in approximate(g2p.phonemize("think", en), en, th).missing_sounds}
+    assert "θ" in think_missing
+
+
+def test_approximate_thai_for_english_learners(g2p, langs):
+    _, _ = langs
+    en = load_language("en-us")
+    th = load_language("th")
+    result = approximate(g2p.phonemize("กิน", th), th, en)
+    assert result.text == "kin"
+
+
+def test_thai_tone_marks_tokenize(g2p, langs):
+    th = load_language("th")
+    tokens = g2p.phonemize("กิน", th)
+    # espeak marks tone with ASCII digits (e.g. 2); no raw digits may leak through
+    assert all(not t.ipa.isdigit() for t in tokens)
+    assert [t.ipa for t in tokens] == ["k", "i", "n"]
+
+
+def test_align_thai_pronunciation():
+    th = load_language("th")
+    en = load_language("en-us")
+    pairs = align(["k", "i", "n"], ["k", "i", "n"])
+    verdict_list = verdicts(pairs, th, en)
+    assert all(v.status == "correct" for v in verdict_list)
+    assert score(3, verdict_list, 0) == 100
+

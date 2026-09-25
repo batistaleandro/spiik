@@ -1,4 +1,5 @@
 fastapi
+prometheus-client
 uvicorn[standard]
 phonemizer
 panphon

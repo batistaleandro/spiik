@@ -2,7 +2,7 @@
 
 One small model per language pair; pairs without a direct model pivot
 through English (pt→de = pt→en + en→de), which covers every combination
-of the shipped languages with 12 models. All models are Apache-2.0 or
+of the shipped languages with 13 models. All models are Apache-2.0 or
 CC-BY-4.0 and translate a phrase comfortably under a second on CPU.
 
 Models are loaded lazily and kept in a small LRU so RAM stays bounded
@@ -15,7 +15,10 @@ cache the translator reports unavailable and the hosted chain takes over
 from __future__ import annotations
 
 import threading
+import time
 from collections import OrderedDict
+
+from app.metrics import MODEL_LOADS, MODEL_LOAD_SECONDS
 
 # (source, target) google codes → (model id, source token, target token).
 # Tokens are the `>>id<<` sentence-initial labels some grouped Marian
@@ -33,6 +36,9 @@ _MODELS: dict[tuple[str, str], tuple[str, str | None, str | None]] = {
     ("it", "en"): ("Helsinki-NLP/opus-mt-it-en", None, None),
     ("en", "ru"): ("Helsinki-NLP/opus-mt-en-ru", None, None),
     ("ru", "en"): ("Helsinki-NLP/opus-mt-ru-en", None, None),
+    # Thai has no en→th Marian model on HF; th→en still gives every
+    # th→X pair a pivot and X→th falls back to the hosted chain
+    ("th", "en"): ("Helsinki-NLP/opus-mt-th-en", None, None),
 }
 
 MODEL_IDS = sorted({model for model, _, _ in _MODELS.values()})
@@ -67,9 +73,16 @@ class MarianTranslator:
     def _load(self, model_id: str):
         from transformers import MarianMTModel, MarianTokenizer
 
-        tokenizer = MarianTokenizer.from_pretrained(model_id)
-        model = MarianMTModel.from_pretrained(model_id)
+        start = time.perf_counter()
+        try:
+            tokenizer = MarianTokenizer.from_pretrained(model_id)
+            model = MarianMTModel.from_pretrained(model_id)
+        except Exception:
+            MODEL_LOADS.labels(model_id, "fail").inc()
+            raise
         model.eval()
+        MODEL_LOAD_SECONDS.labels(model_id).observe(time.perf_counter() - start)
+        MODEL_LOADS.labels(model_id, "ok").inc()
         return model, tokenizer
 
     def _get(self, model_id: str):

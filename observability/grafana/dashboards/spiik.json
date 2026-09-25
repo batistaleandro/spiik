@@ -1,0 +1,313 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Version",
+      "description": "Running spiik build (image tag) and scoring engine.",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "min(spiik_build_info) by (version, engine)",
+          "legendFormat": "{{version}} · {{engine}}",
+          "instant": true
+        }
+      ],
+      "options": {
+        "textMode": "name",
+        "wideLayout": true,
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Requests in flight",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "spiik_http_requests_in_flight",
+          "legendFormat": "in flight",
+          "instant": true
+        }
+      ],
+      "options": {
+        "textMode": "value",
+        "wideLayout": true,
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 15 }] } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Error rate (5xx)",
+      "description": "Share of responses with status ≥ 500 over the last 5 minutes.",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(spiik_http_requests_total{status=~\"5..\"}[$__rate_interval])) / sum(rate(spiik_http_requests_total[$__rate_interval]))",
+          "legendFormat": "5xx",
+          "instant": true
+        }
+      ],
+      "options": {
+        "textMode": "value",
+        "wideLayout": true,
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Upstream jobs (per worker)",
+      "description": "Translation and TTS attempts per second per worker process.",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(spiik_translations_total[$__rate_interval])) by (provider)",
+          "legendFormat": "translate · {{provider}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(spiik_tts_total[$__rate_interval])) by (provider)",
+          "legendFormat": "tts · {{provider}}"
+        }
+      ],
+      "options": {
+        "textMode": "value",
+        "wideLayout": true,
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Request rate by route",
+      "description": "Requests per second, by method and templated route.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(spiik_http_requests_total[$__rate_interval])) by (method, route)",
+          "legendFormat": "{{method}} {{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Request latency",
+      "description": "p50 and p95 across all routes.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum(rate(spiik_http_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum(rate(spiik_http_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "p95"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "p95 latency by route",
+      "description": "Where the slow requests live — assessment (ASR) will dominate.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(spiik_http_request_duration_seconds_bucket[$__rate_interval])) by (le, route))",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true, "calcs": ["lastNotNull", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Assessment latency",
+      "description": "Audio decode + phoneme recognition + alignment (p50/p95), and the recognition step alone.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum(rate(spiik_assess_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "assess p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum(rate(spiik_assess_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "assess p95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.95, sum(rate(spiik_asr_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "legendFormat": "recognition p95"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Model loads",
+      "description": "Weight loads per model (first use per worker process). A repeat load means a worker restarted or an LRU entry was evicted.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(spiik_model_loads_total[$__rate_interval])) by (model, outcome)",
+          "legendFormat": "{{outcome}} · {{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true, "calcs": ["lastNotNull", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Translations by provider outcome",
+      "description": "Local Marian, Google (keyless) and MyMemory attempts. 'empty' includes provider failures — a rising 'empty' rate on local means models are missing or failing.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(spiik_translations_total[$__rate_interval])) by (provider, outcome)",
+          "legendFormat": "{{provider}} · {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Backend process",
+      "description": "CPU time and resident memory per worker process.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(process_cpu_seconds_total{job=\"spiik\"}[$__rate_interval])",
+          "legendFormat": "cpu · {{instance}}"
+        },
+        {
+          "refId": "B",
+          "expr": "process_resident_memory_bytes{job=\"spiik\"}",
+          "legendFormat": "rss · {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "fillOpacity": 8, "lineWidth": 1, "showPoints": "never" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "rss · {{instance}}" },
+            "properties": [{ "id": "unit", "value": "bytes" }]
+          }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["spiik"],
+  "templating": {
+    "list": [
+      {
+        "name": "DS_PROMETHEUS",
+        "label": "Data source",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus", "value": "Prometheus" },
+        "hide": 2
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "spiik",
+  "uid": "spiik-overview",
+  "version": 1
+}

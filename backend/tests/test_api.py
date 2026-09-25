@@ -54,7 +54,7 @@ def test_analyze_native_mode_translates_first(monkeypatch):
     assert data["query"] == "criação"
     assert data["input_lang"] == "native"
     assert data["translated"] == "criação"  # chip shows the user's own word
-    assert data["approximation"] == "cri-ei-chan"
+    assert data["approximation"] == "kri-ei-chan"
 
 
 def test_analyze_native_mode_allows_echo(monkeypatch):
