@@ -14,6 +14,7 @@ kanban-plugin: board
 
 ## Exploring (P2: Secondary & Deep R&D)
 
+- [ ] [[Horizontal Scalability]] (PostgreSQL, Worker Queues & Multi-Node Scaling) #impact/high #effort/med-high #priority/p2 #infrastructure
 - [ ] [[Add additional Language Support]] (Thai polish via Crowdsourcing) #impact/high #effort/high #priority/p2
 - [ ] [[Gamification Features]] (Phonetic Badges & Challenge Duels) #impact/med #effort/low
 - [ ] [[Admin Panel]] (User & Content Moderation) #impact/med #effort/low-med

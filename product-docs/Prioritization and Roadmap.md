@@ -1,6 +1,6 @@
 # Spiik Product Priorities & Impact/Effort Evaluation
 
-This document details the multi-perspective evaluation of features from the [[Kanban]] board across **Engineering**, **Visionary**, and **Product** profiles, updated with the strategic directive prioritizing **community development, crowdsourced data, and viral network effects**.
+This document details the multi-perspective evaluation of features from the [[Kanban]] board across **Engineering**, **Visionary**, and **Product** profiles, updated with the strategic directive prioritizing **community development, crowdsourced data, viral network effects, and infrastructure scalability**.
 
 ---
 
@@ -12,6 +12,7 @@ This document details the multi-perspective evaluation of features from the [[Ka
             │  [[Community Features]] (Crowdsourcing/Cards)  [[Mobile Version]] (PWA)
             │  [[Affiliate and Growth]] (Viral Duels)        [[Basic Devops]] (CI/CD)
             │  Public Profiles & Streaks                     [[Add additional Language Support]]
+            │                                                [[Horizontal Scalability]] (Multi-Node)
             │  ─────────────────────────────────────────────┼──────────────────────────────
             │  [[Admin Panel]]                              [[Payment System]]
             │  [[Gamification Features]] (Badges)           
@@ -27,7 +28,7 @@ This document details the multi-perspective evaluation of features from the [[Ka
 | Quadrant | Items | Strategic Rationale |
 | :--- | :--- | :--- |
 | **Viral Growth & Quick Wins** *(High Impact, Low/Med Effort)* | [[Community Features]] (Share Cards, Crowdsourcing), [[Affiliate and Growth]] (Duels, Referrals) | **Top Immediate Priority**. Creates organic K-factor acquisition and crowdsources phonetic approximations to unblock language scaling. |
-| **Major Foundations** *(High Impact, Med/High Effort)* | [[Basic Devops]] (CI/CD), [[Mobile Version]] (PWA), [[Add additional Language Support]] | **Core Platform Rigor**. Mobile unlocks daily practice; DevOps enables rapid shipping; crowdsourced data feeds back into language models. |
+| **Major Foundations** *(High Impact, Med/High Effort)* | [[Basic Devops]] (CI/CD), [[Mobile Version]] (PWA), [[Add additional Language Support]], [[Horizontal Scalability]] (Postgres, Workers, Cloud) | **Core Platform Rigor & Scale**. Mobile unlocks daily practice; DevOps enables rapid shipping; crowdsourced data feeds back into language models; Horizontal Scalability decouples DB and inference for high concurrency and cloud readiness. |
 | **Operational Fill-Ins** *(Med Impact, Low/Med Effort)* | [[Admin Panel]], [[Gamification Features]] (Phonetic Badges) | **Sprint 2**. Moderation and achievement loops. |
 | **Deferred / Avoid** *(Low Impact, High Effort)* | [[Payment System]] (Deferred until cloud launch), [[Find a Tutor]] (Avoid marketplace trap), P2P Video Chat | **Pause/Shelve**. High operational drag. |
 
@@ -87,20 +88,26 @@ The fundamental insight from manual language curation (such as Thai) is that **a
 - **Visionary**: Deep long-term moat. Community-contributed language packs allow scaling into Thai, Vietnamese, Georgian, and beyond.
 - **Product**: Shift strategy: Launch Thai with a "Community Beta / Help improve approximations" banner to let native speakers refine it.
 
-### 6. [[Admin Panel]]
+### 6. [[Horizontal Scalability]] (Decoupled DB, Async Inference & Multi-Node Support)
+- **Priority**: Medium-High (P2 — Infrastructure Enabler for Hosted Cloud & High Concurrency)
+- **Engineer**: Med–High effort. Abstract database access to support PostgreSQL alongside SQLite via SQLAlchemy/Alembic; extract wav2vec2/Marian inference into an asynchronous worker queue (Redis + Celery) or internal gRPC inference service; enable stateless API tier behind a load balancer.
+- **Visionary**: High impact. Essential for scaling beyond single-host constraints to power a resilient multi-tenant cloud offering (Spiik Cloud) and survive viral traffic surges without breaking self-hosting defaults.
+- **Product**: Major Enabler. Guarantees fast audio scoring latency under concurrent load and unblocks commercial hosted tiers.
+
+### 7. [[Admin Panel]]
 - **Priority**: Medium (P2)
 - **Engineer**: Low–Med effort. Role-based auth, user management, and moderation of community-submitted phonetic suggestions.
 - **Visionary & Product**: Essential operational governance.
 
-### 7. [[Gamification Features]]
+### 8. [[Gamification Features]]
 - **Priority**: Medium (P2)
 - **Engineer & Product**: Low effort. Phonetic badges and shared milestone celebrations linked to viral cards.
 
-### 8. [[Payment System]]
+### 9. [[Payment System]]
 - **Priority**: Low / Deferred (P3)
 - **Recommendation**: Defer until community size and organic retention justify a hosted commercial offering.
 
-### 9. [[Find a Tutor]]
+### 10. [[Find a Tutor]]
 - **Priority**: Paused (P4)
 - **Recommendation**: Avoid the two-sided marketplace trap. Focus resources on automated AI phonetics and crowdsourced community learning.
 
@@ -118,7 +125,9 @@ The fundamental insight from manual language curation (such as Thai) is that **a
   1. **Community Beta for Thai**: Release Thai with crowdsourced correction tools to let the community polish approximation rules.
   2. **Public Profiles & Streak Bragging**: Shareable learner profiles `/u/:username` with social preview cards.
   3. **Shared Word Decks**: Enable learners and tutors to create and publish curated word lists with deep links.
+  4. **Horizontal Scalability Architecture Spike**: Design PostgreSQL abstraction alongside SQLite and plan inference worker decoupling for multi-container deployments.
 
-- **Sprint 3 (Governance & Gamification)**:
+- **Sprint 3 (Governance, Scaling & Gamification)**:
   1. **Admin Moderation Panel**: Approve/merge crowdsourced phonetic contributions into language YAML files.
-  2. **Phonetic Achievement Badges**: Milestone rewards tied to social share cards.
+  2. **Decoupled Worker Queue & Postgres Migration**: Ship production multi-node Compose/Helm blueprint with separate inference workers and external DB support.
+  3. **Phonetic Achievement Badges**: Milestone rewards tied to social share cards.
