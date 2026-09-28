@@ -156,11 +156,28 @@ The core loop: analyze → listen → record → drill.
 
 ---
 
-## v0.6 — Subscriptions & sharing
+## v0.6 — Cloud scale, subscriptions & sharing
 
-> Priority: Medium. Subscriptions unlock advanced features; sharing an
-> affiliate link earns free subscription time. Affiliate work is blocked by
-> the payment system.
+> Priority: Medium-High. Subscriptions and hosted multi-tenancy require
+> horizontal scalability — decoupling SQLite to PostgreSQL and separating
+> heavy ML inference workers. Affiliate work is blocked by the payment system.
+
+### Horizontal Scalability & Cloud Infrastructure
+
+- [ ] **As an operator or cloud host, I can scale spiik horizontally across
+  multiple nodes and containers** (infrastructure)
+  - [ ] Pluggable database layer: Support PostgreSQL via SQLAlchemy/Alembic
+    migrations while preserving zero-config SQLite for single-node
+    self-hosters (`SPIIK_DATABASE_URL`)
+  - [ ] Decoupled ML inference tier: Separate CPU/GPU-bound wav2vec2 scoring
+    and Marian translation into an asynchronous worker queue (Redis + Celery)
+    or gRPC inference service so API nodes remain lightweight and fast
+  - [ ] Stateless API & distributed state: Centralized Redis store for
+    distributed rate limiting, session cache, and WebSocket/P2P signaling
+  - [ ] Clustered deployment blueprints: Multi-replica Docker Compose setup
+    with Traefik/Nginx load balancing and Kubernetes Helm chart templates
+
+### Subscriptions & Growth
 
 - [ ] **As a user, I can subscribe to unlock advanced features** (payment
   system)
