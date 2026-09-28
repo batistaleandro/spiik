@@ -17,6 +17,9 @@ services:
       # number of uvicorn worker processes (CPU-bound inference scales
       # with this; each worker loads its own model copies — see README)
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+      # email of the account promoted to operator (admin panel) at startup,
+      # e.g. SPIIK_ADMIN_EMAIL=you@example.com
+      SPIIK_ADMIN_EMAIL: ${SPIIK_ADMIN_EMAIL:-}
     volumes:
       # named volume seeded from the baked-in model; survives container rebuilds
       - hf-cache:/cache/huggingface

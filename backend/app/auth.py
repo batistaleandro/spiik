@@ -69,4 +69,13 @@ def get_current_user(
     user = db.get(User, int(payload["sub"]))
     if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "account no longer exists")
+    if not user.is_active:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "account disabled")
+    return user
+
+
+def get_current_admin(user: User = Depends(get_current_user)) -> User:
+    """Gate for operator endpoints (`/api/admin/*`)."""
+    if not user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "operator access required")
     return user

@@ -10,9 +10,7 @@
 - `[x]` = shipped · `[ ]` = planned, not started. A version marked
   *(complete)* is fully shipped; the first unmarked version is the current
   working target.
-- v0.1–v0.3 are retrospective labels for work shipped in September 2026 —
-  the project had no version numbers before this roadmap. Automatic
-  versioning arrives with v0.4.
+- v0.1–v0.4 are retrospective labels for work shipped in September 2026.
 - **Exploring** holds ideas being explored that are not committed to a
   release yet — don't fold them into a version without the owner asking.
 - **Non-Goals** are explicit decisions the product will not make.
@@ -142,125 +140,125 @@ The core loop: analyze → listen → record → drill.
 
 ---
 
-## v0.5 — Operator tools & account care
+## v0.5 — Operator Tools & Account Care *(complete — September 2026)*
 
-> Priority: Medium. More people on one instance means the operator needs
-> tools — and users need a way back in.
+> Priority: High. Provide essential governance, user management, and privacy controls
+> so instance operators can manage accounts and users can recover or purge their data.
 
-- [ ] **As an operator, I can manage the users on my instance** (admin panel)
-  - [ ] View and manage user accounts (list, disable, remove)
-- [ ] **As a user who forgot my password, I can get back into my account**
-  - [ ] Self-hosted reset flow (an operator action — no email dependency)
-- [ ] **As a user, I can delete my account and everything in it**
-  - [ ] Account deletion removes the profile, saved words and review history
+### Account Care & Administration
+
+- [x] **As an operator, I can manage the users on my instance** (admin panel)
+  - [x] View and manage user accounts (list, disable, remove)
+- [x] **As a user who forgot my password, I can get back into my account**
+  - [x] Self-hosted reset flow (an operator action — no email dependency)
+- [x] **As a user, I can delete my account and everything in it**
+  - [x] Account deletion removes the profile, saved words and review history
 
 ---
 
-## v0.6 — Cloud scale, subscriptions & sharing
+## v0.6 — Vertical Efficiency, Subscriptions & Affiliates
 
-> Priority: Medium-High. Subscriptions and hosted multi-tenancy require
-> horizontal scalability — decoupling SQLite to PostgreSQL and separating
-> heavy ML inference workers. Affiliate work is blocked by the payment system.
+> Priority: High. Optimize per-node inference to minimize RAM/CPU footprints
+> before scaling out, introduce self-sustaining monetization, and bootstrap viral distribution.
 
-### Horizontal Scalability & Cloud Infrastructure
+### Vertical Inference Optimization
 
-- [ ] **As an operator or cloud host, I can scale spiik horizontally across
-  multiple nodes and containers** (infrastructure)
-  - [ ] Pluggable database layer: Support PostgreSQL via SQLAlchemy/Alembic
-    migrations while preserving zero-config SQLite for single-node
-    self-hosters (`SPIIK_DATABASE_URL`)
-  - [ ] Decoupled ML inference tier: Separate CPU/GPU-bound wav2vec2 scoring
-    and Marian translation into an asynchronous worker queue (Redis + Celery)
-    or gRPC inference service so API nodes remain lightweight and fast
-  - [ ] Stateless API & distributed state: Centralized Redis store for
-    distributed rate limiting, session cache, and WebSocket/P2P signaling
-  - [ ] Clustered deployment blueprints: Multi-replica Docker Compose setup
-    with Traefik/Nginx load balancing and Kubernetes Helm chart templates
+- [ ] **As an operator, I can run 4–6 worker processes on a low-spec host without running out of RAM**
+  - [ ] Export wav2vec2 to ONNX with INT8 CPU quantization, reducing model memory from ~1.3 GB to ~350 MB and cutting inference latency by 2x
+  - [ ] Client-side Web Speech API offloading for word audio playback to bypass backend TTS compute and network transfer
+  - [ ] Enforce memory-lean online translation pipelines (`SPIIK_TRANSLATE=online`) with rate-limit circuit breakers
 
-### Subscriptions & Growth
+### Subscriptions & Feature Gating
 
-- [ ] **As a user, I can subscribe to unlock advanced features** (payment
-  system)
-  - [ ] Subscription management
-  - [ ] Feature blocking — capabilities gated by subscription tier
-  - [ ] Crypto payment
-- [ ] **As a user, I can share an affiliate link and unlock free subscription
-  time** (affiliate and growth)
-  - [ ] Affiliate link management — rewards by action (share a link / share a
-    post → 1 week / 1 month / 1 year)
-  - [ ] Depends on the payment system; partially on the admin panel
+- [ ] **As a user, I can subscribe to unlock unlimited practice and premium features**
+  - [ ] Stripe Checkout and Customer Portal integration for recurring monthly ($4.99) and annual ($39.99) billing - Pricing strategy still needs to be defined
+  - [ ] Feature limiter: enforce daily velocity caps on free accounts (e.g., 15 drills/day) while granting unlimited access to Spiik Pro
+  - [ ] Support crypto checkout options alongside standard payment rails
+
+### Affiliate & Referral Engine
+
+- [ ] **As a creator, tutor, or user, I can earn revenue or free Pro time by sharing spiik**
+  - [ ] Unique referral code generation and cookie/JWT attribution tracking on user signup
+  - [ ] Tutor & Influencer affiliate dashboard with performance tracking and recurring revenue-share payouts
+  - [ ] In-app peer referral mechanism: give 1 week of Pro for every friend referred who completes their first practice streak
 
 ---
 
 ## v0.7 — Learn together
 
-> Community, tutors, and a little motivation. Gamification is Low priority on
-> the board — its smallest slice ships last.
+> Priority: Medium. Community, peer motivation, and tutor-led learning paths.
 
-- [ ] **As a learner, I can have a public profile showing my streak**
-  (community)
-- [ ] **As a learner, I can practice with another learner over video**
-  (community — P2P video chat)
+- [ ] **As a learner, I can have a public profile showing my streak** (community)
+- [ ] **As a learner, I can practice with another learner over video** (community — P2P video chat)
 - [ ] **As a learner, I can find a tutor**
-  - [ ] Needs a tutor-facing admin panel
+  - [ ] Tutor-facing marketplace and scheduling profile
 - [ ] **As a learner, I can earn badges for milestones** (gamification)
 
 ---
 
 ## v0.8 — More of the world
 
-> Niche languages with non-latin alphabets are where "reading in your
-> language" is strongest (PRODUCT.md).
+> Priority: Medium. Niche languages with non-latin alphabets are where "reading in your language" is strongest ([PRODUCT.md](PRODUCT.md)).
 
 - [ ] **As a learner, I can practice Thai, Vietnamese and Georgian**
-  - [ ] Thai (Partially implemented - Needs polish with the approximate pronunciation and phonetic alphabet generation)
+  - [ ] Thai (polishing phonetic generation and tone approximations)
   - [ ] Vietnamese
   - [ ] Georgian
 
-Each language is a YAML data file following the documented workflow; the
-non-latin scripts are where the spiik spelling shines.
+Each language is a YAML data file following the documented workflow; the non-latin scripts are where the spiik spelling shines.
 
 ---
 
 ## v0.9 — In your pocket
 
-> Mobile is the platform frontier (Kanban + PRODUCT.md), together with the
-> reach decisions still open: theme and UI language.
+> Priority: Medium-Low. Cross-platform mobile presence and internationalization.
 
-- [ ] **As a learner, I can install spiik on my phone and practice from
-  there**
-  - [ ] Mobile version — an installable PWA first
+- [ ] **As a learner, I can install spiik on my phone and practice from there** (Installable PWA)
 - [ ] **As a learner, I can switch to a light theme** (dark-only today)
-- [ ] **As a learner, I can use spiik in my own language** (UI translations —
-  commits the open i18n decision)
-- [ ] **As a learner, the browser tab says spiik, not "frontend"** (page
-  title)
+- [ ] **As a learner, I can use spiik in my own language** (UI internationalization)
+- [ ] **As a learner, the browser tab displays contextual titles instead of generic placeholders**
+- [ ] **As a learner, I experience a refreshed, modernized visual design across all screens** (UI/UX Design Revamp)
+  - [ ] Low-priority, medium-effort design overhaul: unified typography, updated component styling, refined card spacing, and consistent design tokens across Trainer, Practice, Words, and Profile screens (prioritized as low impact / low priority relative to core phonetic learning features)
+
+---
+
+## v0.10 — Production Deployment, Scalability & Clustered Infrastructure
+
+> Priority: Low / Deferred to End of Roadmap. Production deployment and multi-node clustering
+> moved to the end of the roadmap, activating after application features and single-node efficiency are complete.
+
+### Production Infrastructure & Deployment
+
+- [ ] **As an operator, I can deploy spiik to OCI Always-Free ARM compute at $0/month hosting cost**
+  - [ ] Multi-arch release pipeline building and publishing `linux/arm64` images alongside `linux/amd64` to GHCR
+  - [ ] Production compose stack bundling automated TLS reverse proxy (Caddy / Cloudflare SSL) to enable the browser WebRTC microphone capture API over HTTPS
+- [ ] **As an operator, my SQLite database is continuously backed up offsite without paid databases**
+  - [ ] Integrated Litestream sidecar streaming WAL frames in real time to Cloudflare R2 object storage
+  - [ ] Documented automated disaster recovery and point-in-time restore procedures (`scripts/restore_db.sh`)
+
+### Horizontal Scalability & Distributed State
+
+- [ ] **As an operator, I can scale spiik horizontally across multiple nodes and clusters** (Scale-Triggered at >25,000 MAU)
+  - [ ] Pluggable database layer: support PostgreSQL via SQLAlchemy/Alembic migrations while preserving zero-config SQLite for single-node setups (`SPIIK_DATABASE_URL`)
+  - [ ] Decoupled ML inference tier: asynchronous scoring via Celery/Redis workers to keep frontend API gateways fully stateless
+  - [ ] Production Helm charts and multi-region deployment blueprints
 
 ---
 
 ## Exploring
 
-> Ideas being explored — surfaced during development, not committed to a
-> release yet.
+> Ideas being explored — surfaced during development, not committed to a release yet.
 
-- **Translation alternatives picker** — when the first translation isn't
-  quite right, pick a better one before saving (explored during the
-  offline-translation work)
-- **Self-hosted LibreTranslate** — an additional translation provider for
-  fully offline instances
-- **Per-pair approximation quality overrides** — the mechanism is scaffolded
-  (`data/overrides/`), no pairs curated yet
+- **Translation alternatives picker** — choose alternative phrase meanings before saving (explored during offline translation work)
+- **Self-hosted LibreTranslate** — fallback option for fully air-gapped environments
+- **Per-pair approximation quality overrides** — curated phoneme substitution tweaks (scaffolded at `data/overrides/`)
 
 ---
 
 ## Non-Goals (Explicit)
 
-- **Required paid APIs or keys in the core loop** — the free, keyless
-  analyze / listen / practice loop must degrade gracefully; cloud assessment
-  (Azure) stays an opt-in add-on, never a requirement.
-- **Privileged language pairs** — every shipped pair is first-class; the
-  pt-BR → en-US defaults are conveniences only.
-- **Copy the engine can't back** — phonetics-first honesty: espeak's IPA is
-  an approximation, and the product says so.
-- **Novelty over retention** — durable learning outcomes (spaced practice,
-  streaks, honest scoring) outrank one-off novelty checks.
+- **Required paid APIs or keys in the core loop** — free assessment must always remain functional without third-party API dependencies (Azure stays an opt-in add-on, never a requirement).
+- **Premature distributed infrastructure** — no mandatory multi-node clustering or managed databases prior to maximizing single-node efficiency.
+- **Privileged language pairs** — all language pairs remain first-class citizens; the pt-BR → en-US defaults are conveniences only.
+- **Copy the engine can't back** — phonetics-first honesty: espeak's IPA is an approximation, and the product says so.
+- **Novelty over retention** — spaced repetition and phonetic accuracy take priority over cosmetic features (durable learning outcomes outrank one-off novelty checks).

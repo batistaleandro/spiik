@@ -41,7 +41,12 @@ class PasswordChange(BaseModel):
 
 
 def user_out(user: User) -> dict:
-    return {"id": user.id, "username": user.username, "email": user.email}
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "is_admin": user.is_admin,
+    }
 
 
 def _check_username(username: str, db: Session, *, exclude_id: int | None = None) -> str:
@@ -99,6 +104,8 @@ def login(req: LoginRequest, db: Session = Depends(get_db)) -> dict:
         user = db.scalar(select(User).where(User.email == ident.lower()))
     if user is None or not verify_password(req.password, user.password_hash):
         raise HTTPException(401, "wrong username or password")
+    if not user.is_active:
+        raise HTTPException(403, "account disabled — ask the operator to re-enable it")
     return {"access_token": create_token(user), "token_type": "bearer", "user": user_out(user)}
 
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { changePassword, fetchHealth, updateProfile } from "../api";
+import { changePassword, deleteAccount, fetchHealth, updateProfile } from "../api";
 import { useAuth } from "../auth-context";
 
 export default function ProfileScreen() {
@@ -26,6 +26,11 @@ export default function ProfileScreen() {
   const [pwMsg, setPwMsg] = useState("");
   const [pwErr, setPwErr] = useState("");
   const [savingPw, setSavingPw] = useState(false);
+
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteErr, setDeleteErr] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   if (!user) return null;
 
@@ -68,6 +73,25 @@ export default function ProfileScreen() {
     } finally {
       setSavingPw(false);
     }
+  };
+
+  const deleteMyAccount = async () => {
+    setDeletingAccount(true);
+    setDeleteErr("");
+    try {
+      await deleteAccount();
+      logout();
+      navigate("/");
+    } catch (err) {
+      setDeleteErr(String((err as Error).message ?? err));
+      setDeletingAccount(false);
+    }
+  };
+
+  const confirmDelete = (e: FormEvent) => {
+    e.preventDefault();
+    if (deleteConfirmText !== user.username) return;
+    void deleteMyAccount();
   };
 
   return (
@@ -159,10 +183,64 @@ export default function ProfileScreen() {
         >
           Log out
         </button>
+      </section>
+
+      <section className="card">
+        <h3>Danger zone</h3>
+        <p className="message">
+          Deleting your account permanently removes your profile, saved words
+          and review history. There is no undo.
+        </p>
+        <button className="danger" onClick={() => setDeleting(true)}>
+          Delete account…
+        </button>
         {version && version !== "dev" && (
           <p className="ok-note">spiik {version}</p>
         )}
       </section>
+
+      {deleting && (
+        <div className="modal-overlay" onClick={() => setDeleting(false)}>
+          <form className="card modal" onSubmit={confirmDelete}>
+            <h3>Delete account</h3>
+            <p className="message">
+              This removes <strong>{user.username}</strong>, every saved word
+              and the full review history from this instance — permanently.
+            </p>
+            <label className="field">
+              <span>Type your username to confirm</span>
+              <input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                autoComplete="off"
+                autoFocus
+              />
+            </label>
+            {deleteErr && <p className="error">⚠ {deleteErr}</p>}
+            <div className="actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleting(false);
+                  setDeleteConfirmText("");
+                  setDeleteErr("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="danger"
+                disabled={
+                  deletingAccount || deleteConfirmText !== user.username
+                }
+              >
+                {deletingAccount ? "…" : "Delete everything"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </main>
   );
 }

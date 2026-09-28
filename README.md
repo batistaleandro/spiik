@@ -177,6 +177,21 @@ Storage & config:
   generated once and kept next to the database. Set a long random
   `SPIIK_SECRET` in `docker-compose` for real deployments.
 
+## Operator tools & account care
+
+- **Admin panel** — accounts with the operator flag get an **Admin** screen
+  (`/admin`) to search, list, disable/enable and remove users, and to reset
+  passwords. Removal purges the profile, saved words, review history and
+  pronunciation feedback; disabling cuts off live sessions immediately.
+  Promote yourself by setting `SPIIK_ADMIN_EMAIL=you@example.com` (checked
+  at startup against the email you registered with) — no email server is
+  involved anywhere.
+- **Operator password reset** — *Reset password* on the admin panel issues
+  a one-time password shown once; hand it to the locked-out learner out of
+  band.
+- **Account deletion** — every user can delete their own account (Profile →
+  Danger zone), which permanently removes their data.
+
 ## Tests
 
 ```bash
