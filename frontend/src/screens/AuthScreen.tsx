@@ -13,7 +13,6 @@ export default function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [showRecovery, setShowRecovery] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -80,27 +79,6 @@ export default function AuthScreen({ mode }: { mode: "login" | "register" }) {
             {busy ? "…" : mode === "login" ? "Log in" : "Create account"}
           </button>
         </form>
-        {mode === "login" && (
-          <div className="auth-recovery">
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => setShowRecovery((v) => !v)}
-            >
-              forgot password?
-            </button>
-            {showRecovery && (
-              <p className="message">
-                spiik never sends email. Ask the operator of this instance to
-                reset your password from the Admin panel — you'll get a
-                one-time password to log in with. Running this instance
-                yourself? Log in as the operator, or set{" "}
-                <code>SPIIK_ADMIN_EMAIL</code> to your registered email and
-                restart to become one.
-              </p>
-            )}
-          </div>
-        )}
         <p className="auth-switch">
           {mode === "login" ? (
             <>

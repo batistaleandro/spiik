@@ -1289,35 +1289,3 @@ footer {
   width: 100%;
   max-width: 420px;
 }
-
-.auth-recovery {
-  margin: 0.75rem 0 0;
-  text-align: center;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: var(--accent);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.9rem;
-  padding: 0;
-}
-
-.link-button:hover {
-  text-decoration: underline;
-}
-
-.auth-recovery .message {
-  margin: 0.5rem 0 0;
-  font-size: 0.85rem;
-  line-height: 1.6;
-}
-
-.auth-recovery code {
-  background: var(--bg-chip);
-  border-radius: 4px;
-  padding: 0.05rem 0.3rem;
-  font-size: 0.8rem;
-}
