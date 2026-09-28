@@ -351,6 +351,27 @@ export async function changePassword(
   if (!res.ok) throw await errorFrom(res);
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  const res = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void> {
+  const res = await fetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
 // ---- saved words / practice / progress ------------------------------------
 
 export async function saveWord(

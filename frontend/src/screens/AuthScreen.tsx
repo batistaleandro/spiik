@@ -83,6 +83,8 @@ export default function AuthScreen({ mode }: { mode: "login" | "register" }) {
           {mode === "login" ? (
             <>
               no account yet? <Link to="/register">Create one</Link>
+              {" · "}
+              <Link to="/forgot-password">forgot password?</Link>
             </>
           ) : (
             <>

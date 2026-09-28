@@ -3,8 +3,10 @@ import type { ReactElement } from "react";
 import { useAuth } from "./auth-context";
 import AdminScreen from "./screens/AdminScreen";
 import AuthScreen from "./screens/AuthScreen";
+import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import PracticeScreen from "./screens/PracticeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import TrainerScreen from "./screens/TrainerScreen";
 import WordsScreen from "./screens/WordsScreen";
 
@@ -89,6 +91,8 @@ export default function App() {
         <Route path="/" element={<TrainerScreen />} />
         <Route path="/login" element={<AuthScreen mode="login" />} />
         <Route path="/register" element={<AuthScreen mode="register" />} />
+        <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+        <Route path="/reset-password" element={<ResetPasswordScreen />} />
         <Route
           path="/practice"
           element={

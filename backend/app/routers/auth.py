@@ -1,8 +1,11 @@
-"""Auth routes: register, login, profile management."""
+"""Auth routes: register, login, profile management, password recovery."""
 
 from __future__ import annotations
 
+import hashlib
 import re
+import secrets
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
@@ -12,11 +15,14 @@ from sqlalchemy.orm import Session
 
 from app.auth import create_token, get_current_user, hash_password, verify_password
 from app.db import get_db
-from app.models import User
+from app.email import send_password_reset_email
+from app.models import PasswordResetToken, User, utcnow
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 _USERNAME_RE = re.compile(r"^[\w][\w.\-]*$", re.UNICODE)
+
+RESET_TOKEN_TTL = timedelta(hours=1)
 
 
 class RegisterRequest(BaseModel):
@@ -138,4 +144,60 @@ def change_password(
     if not verify_password(req.current_password, user.password_hash):
         raise HTTPException(403, "current password is wrong")
     user.password_hash = hash_password(req.new_password)
+    db.commit()
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+@router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)) -> None:
+    """Mail a one-time reset link. Always 204 — answering differently for
+    unknown addresses would reveal who has an account."""
+    email = str(req.email).strip().lower()
+    user = db.scalar(select(User).where(User.email == email))
+    if user is None or not user.is_active:
+        return
+    token = secrets.token_urlsafe(32)
+    # a fresh request supersedes links that are still outstanding
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == user.id,
+        PasswordResetToken.used_at.is_(None),
+    ).delete(synchronize_session=False)
+    db.add(
+        PasswordResetToken(
+            user_id=user.id,
+            token_hash=_hash_token(token),
+            expires_at=utcnow() + RESET_TOKEN_TTL,
+        )
+    )
+    db.commit()
+    # SMTP misconfiguration is logged by the sender, never surfaced here
+    send_password_reset_email(user.email, token)
+
+
+@router.post("/reset-password", status_code=status.HTTP_204_NO_CONTENT)
+def reset_password(req: PasswordReset, db: Session = Depends(get_db)) -> None:
+    row = db.scalar(
+        select(PasswordResetToken).where(
+            PasswordResetToken.token_hash == _hash_token(req.token)
+        )
+    )
+    if row is None or row.used_at is not None or row.expires_at < utcnow():
+        raise HTTPException(400, "invalid or expired reset link")
+    user = db.get(User, row.user_id)
+    if user is None:
+        raise HTTPException(400, "invalid or expired reset link")
+    user.password_hash = hash_password(req.new_password)
+    row.used_at = utcnow()
     db.commit()

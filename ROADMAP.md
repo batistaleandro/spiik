@@ -150,7 +150,10 @@ The core loop: analyze → listen → record → drill.
 - [x] **As an operator, I can manage the users on my instance** (admin panel)
   - [x] View and manage user accounts (list, disable, remove)
 - [x] **As a user who forgot my password, I can get back into my account**
-  - [x] Self-hosted reset flow (an operator action — no email dependency)
+  - [x] Email recovery flow — one-time reset link (valid 1 h, single use)
+    sent over any plain SMTP account (`SPIIK_SMTP_*`); without SMTP config
+    the link is logged, and the admin panel keeps an operator-assisted
+    one-time password as fallback
 - [x] **As a user, I can delete my account and everything in it**
   - [x] Account deletion removes the profile, saved words and review history
 
@@ -213,8 +216,7 @@ Each language is a YAML data file following the documented workflow; the non-lat
 
 > Priority: Medium-Low. Cross-platform mobile presence and internationalization.
 
-- [ ] **As a learner, I can install spiik on my phone and practice from there** (Installable PWA)
-- [ ] **As a learner, I can switch to a light theme** (dark-only today)
+- [ ] **As a learner, I can install spiik on my phone and practice from there** (React Native)
 - [ ] **As a learner, I can use spiik in my own language** (UI internationalization)
 - [ ] **As a learner, the browser tab displays contextual titles instead of generic placeholders**
 - [ ] **As a learner, I experience a refreshed, modernized visual design across all screens** (UI/UX Design Revamp)

@@ -98,6 +98,23 @@ class ReviewLog(Base):
     word: Mapped["Word"] = relationship(back_populates="reviews")
 
 
+class PasswordResetToken(Base):
+    """Single-use, time-limited token for the email password recovery flow.
+
+    Only the SHA-256 hash of the token is stored, so a database leak can't
+    be replayed against the reset endpoint.
+    """
+
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime())
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow)
+
+
 class PronunciationSuggestion(Base):
     """A user-suggested approximate pronunciation, shared across the userbase.
 

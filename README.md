@@ -194,11 +194,16 @@ Storage & config:
   passwords. Removal purges the profile, saved words, review history and
   pronunciation feedback; disabling cuts off live sessions immediately.
   Promote yourself by setting `SPIIK_ADMIN_EMAIL=you@example.com` (checked
-  at startup against the email you registered with) — no email server is
-  involved anywhere.
-- **Operator password reset** — *Reset password* on the admin panel issues
-  a one-time password shown once; hand it to the locked-out learner out of
-  band.
+  at startup against the email you registered with).
+- **Password recovery** — *forgot password?* on the login screen mails a
+  one-time reset link (valid one hour, single use). Email goes out over any
+  plain SMTP account — configure `SPIIK_SMTP_HOST`, `SPIIK_SMTP_PORT`
+  (default 587; 465 for implicit TLS), `SPIIK_SMTP_USER`,
+  `SPIIK_SMTP_PASSWORD`, `SPIIK_SMTP_FROM` and `SPIIK_APP_URL` (base URL
+  used in the link). Without `SPIIK_SMTP_HOST` nothing is sent and the
+  reset link is written to the server log instead — handy for local
+  development. As a fallback when email isn't configured, the operator can
+  also issue a one-time password from the admin panel.
 - **Account deletion** — every user can delete their own account (Profile →
   Danger zone), which permanently removes their data.
 
