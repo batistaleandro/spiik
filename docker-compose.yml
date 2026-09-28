@@ -17,6 +17,18 @@ services:
       # number of uvicorn worker processes (CPU-bound inference scales
       # with this; each worker loads its own model copies — see README)
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+      # email of the account promoted to operator (admin panel) at startup,
+      # e.g. SPIIK_ADMIN_EMAIL=you@example.com
+      SPIIK_ADMIN_EMAIL: ${SPIIK_ADMIN_EMAIL:-}
+      # password recovery emails: plain SMTP account, no paid service needed.
+      # Without SPIIK_SMTP_HOST the reset link is written to the logs instead
+      SPIIK_SMTP_HOST: ${SPIIK_SMTP_HOST:-}
+      SPIIK_SMTP_PORT: ${SPIIK_SMTP_PORT:-587}
+      SPIIK_SMTP_USER: ${SPIIK_SMTP_USER:-}
+      SPIIK_SMTP_PASSWORD: ${SPIIK_SMTP_PASSWORD:-}
+      SPIIK_SMTP_FROM: ${SPIIK_SMTP_FROM:-spiik@localhost}
+      # base URL used in emailed links, e.g. https://spiik.example.com
+      SPIIK_APP_URL: ${SPIIK_APP_URL:-}
     volumes:
       # named volume seeded from the baked-in model; survives container rebuilds
       - hf-cache:/cache/huggingface

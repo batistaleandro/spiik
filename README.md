@@ -57,6 +57,16 @@ npm run build        # served by the backend at /
 
 ## Run
 
+Or use `make` (targets below create the venv / install deps on first use):
+
+```bash
+make run     # build the frontend fresh, then serve API + SPA on one port
+make dev     # hot-reload dev: API on :8900 + vite dev server on :5173
+make help    # all targets (build, test, backend, frontend, clean, …)
+```
+
+Equivalent by hand:
+
 ```bash
 cd backend
 .venv/bin/python -m uvicorn app.main:app --port 8900
@@ -70,7 +80,7 @@ afterwards inference is a couple of seconds.
 For frontend development with hot reload:
 
 ```bash
-cd frontend && npm run dev   # proxies /api to localhost:8900
+make dev     # or: cd frontend && npm run dev   (proxies /api to localhost:8900)
 ```
 
 ## Docker
@@ -176,6 +186,26 @@ Storage & config:
 - JWT sessions are signed with `SPIIK_SECRET`; if unset, a random secret is
   generated once and kept next to the database. Set a long random
   `SPIIK_SECRET` in `docker-compose` for real deployments.
+
+## Operator tools & account care
+
+- **Admin panel** — accounts with the operator flag get an **Admin** screen
+  (`/admin`) to search, list, disable/enable and remove users, and to reset
+  passwords. Removal purges the profile, saved words, review history and
+  pronunciation feedback; disabling cuts off live sessions immediately.
+  Promote yourself by setting `SPIIK_ADMIN_EMAIL=you@example.com` (checked
+  at startup against the email you registered with).
+- **Password recovery** — *forgot password?* on the login screen mails a
+  one-time reset link (valid one hour, single use). Email goes out over any
+  plain SMTP account — configure `SPIIK_SMTP_HOST`, `SPIIK_SMTP_PORT`
+  (default 587; 465 for implicit TLS), `SPIIK_SMTP_USER`,
+  `SPIIK_SMTP_PASSWORD`, `SPIIK_SMTP_FROM` and `SPIIK_APP_URL` (base URL
+  used in the link). Without `SPIIK_SMTP_HOST` nothing is sent and the
+  reset link is written to the server log instead — handy for local
+  development. As a fallback when email isn't configured, the operator can
+  also issue a one-time password from the admin panel.
+- **Account deletion** — every user can delete their own account (Profile →
+  Danger zone), which permanently removes their data.
 
 ## Tests
 

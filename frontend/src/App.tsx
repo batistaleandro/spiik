@@ -1,9 +1,12 @@
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import type { ReactElement } from "react";
 import { useAuth } from "./auth-context";
+import AdminScreen from "./screens/AdminScreen";
 import AuthScreen from "./screens/AuthScreen";
+import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import PracticeScreen from "./screens/PracticeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import TrainerScreen from "./screens/TrainerScreen";
 import WordsScreen from "./screens/WordsScreen";
 
@@ -21,6 +24,27 @@ function RequireAuth({ children }: { children: ReactElement }) {
   }
   if (!user) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+  return children;
+}
+
+function RequireAdmin({ children }: { children: ReactElement }) {
+  const { user, ready } = useAuth();
+  const location = useLocation();
+  if (!ready) {
+    return (
+      <main>
+        <section className="card">
+          <p className="message">…</p>
+        </section>
+      </main>
+    );
+  }
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+  if (!user.is_admin) {
+    return <Navigate to="/" replace />;
   }
   return children;
 }
@@ -46,6 +70,7 @@ export default function App() {
                 <NavLink to="/practice">Practice</NavLink>
                 <NavLink to="/words">Words</NavLink>
                 <NavLink to="/profile">Profile</NavLink>
+                {user.is_admin && <NavLink to="/admin">Admin</NavLink>}
               </>
             ) : (
               <>
@@ -66,6 +91,8 @@ export default function App() {
         <Route path="/" element={<TrainerScreen />} />
         <Route path="/login" element={<AuthScreen mode="login" />} />
         <Route path="/register" element={<AuthScreen mode="register" />} />
+        <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+        <Route path="/reset-password" element={<ResetPasswordScreen />} />
         <Route
           path="/practice"
           element={
@@ -88,6 +115,14 @@ export default function App() {
             <RequireAuth>
               <ProfileScreen />
             </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminScreen />
+            </RequireAdmin>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

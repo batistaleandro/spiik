@@ -1230,3 +1230,62 @@ footer {
   color: var(--text-dim);
   line-height: 1.6;
 }
+
+/* ---- admin screen & account deletion ----------------------------------------- */
+
+.admin-table th:last-child,
+.admin-table td:last-child {
+  text-align: right;
+}
+
+.admin-actions {
+  white-space: nowrap;
+}
+
+.admin-actions button {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+}
+
+.admin-actions button:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.admin-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.admin-tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--bg-chip);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 18, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+}

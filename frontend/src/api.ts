@@ -75,6 +75,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  is_admin?: boolean;
 }
 
 export interface AuthResponse {
@@ -350,6 +351,27 @@ export async function changePassword(
   if (!res.ok) throw await errorFrom(res);
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  const res = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void> {
+  const res = await fetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
 // ---- saved words / practice / progress ------------------------------------
 
 export async function saveWord(
@@ -397,6 +419,67 @@ export async function reviewWord(
 
 export async function fetchProgress(): Promise<Progress> {
   return authJson<Progress>("/api/progress");
+}
+
+// ---- operator admin / account deletion -------------------------------------
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  is_admin: boolean;
+  is_active: boolean;
+  created_at: string | null;
+  word_count: number;
+  last_review_at: string | null;
+}
+
+export async function deleteAccount(): Promise<void> {
+  const res = await fetch("/api/users/me", {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  handleExpired(res);
+  if (!res.ok) throw await errorFrom(res);
+}
+
+export async function adminListUsers(): Promise<AdminUser[]> {
+  const res = await authJson<{ users: AdminUser[] }>("/api/admin/users");
+  return res.users;
+}
+
+export async function adminToggleUser(
+  id: number
+): Promise<{ id: number; is_active: boolean }> {
+  return authJson<{ id: number; is_active: boolean }>(
+    `/api/admin/users/${id}/deactivate`,
+    { method: "POST" }
+  );
+}
+
+export async function adminDeleteUser(id: number): Promise<void> {
+  const res = await fetch(`/api/admin/users/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw await errorFrom(res);
+}
+
+/** Returns the generated one-time password, or null when the operator
+ * supplied one (it is never shown again either way). */
+export async function adminResetPassword(
+  id: number,
+  newPassword?: string
+): Promise<string | null> {
+  const res = await authJson<{ generated_password: string | null }>(
+    `/api/admin/users/${id}/reset-password`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ new_password: newPassword || null }),
+    }
+  );
+  return res.generated_password;
 }
 
 // ---- pronunciation feedback ------------------------------------------------

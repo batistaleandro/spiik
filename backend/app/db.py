@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 _DEFAULT_DB = Path(__file__).resolve().parents[1] / "data" / "spiik.db"
@@ -43,6 +43,41 @@ def init_db() -> None:
 
     db_file().parent.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(engine)
+    _migrate_users_table()
+    _promote_admin()
+
+
+def _migrate_users_table() -> None:
+    """create_all only adds columns for *new* tables, so databases
+    provisioned before v0.5 need the user-management columns by hand."""
+    with engine.connect() as conn:
+        columns = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(users)")}
+        if not columns:
+            return  # fresh database — create_all already made the full schema
+        if "is_admin" not in columns:
+            conn.exec_driver_sql(
+                "ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"
+            )
+        if "is_active" not in columns:
+            conn.exec_driver_sql(
+                "ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT 1"
+            )
+        conn.commit()
+
+
+def _promote_admin() -> None:
+    """SPIIK_ADMIN_EMAIL promotes that account to operator at startup —
+    the no-email way for a self-hoster to bootstrap their first admin."""
+    email = os.environ.get("SPIIK_ADMIN_EMAIL", "").strip().lower()
+    if not email:
+        return
+    from app.models import User
+
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        if user is not None and not user.is_admin:
+            user.is_admin = True
+            db.commit()
 
 
 def get_db():

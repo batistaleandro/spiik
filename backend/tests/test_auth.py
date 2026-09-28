@@ -16,7 +16,7 @@ def test_register_and_me(client):
 
     me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {body['access_token']}"})
     assert me.status_code == 200
-    assert me.json() == {"id": body["user"]["id"], "username": "leo", "email": "leo@example.com"}
+    assert me.json() == {"id": body["user"]["id"], "username": "leo", "email": "leo@example.com", "is_admin": False}
 
 
 def test_register_rejects_short_password(client):
