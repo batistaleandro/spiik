@@ -231,7 +231,8 @@ Each language is a YAML data file following the documented workflow; the non-lat
 
 ### Production Infrastructure & Deployment
 
-- [ ] **As an operator, I can deploy spiik to OCI Always-Free ARM compute at $0/month hosting cost**
+- [ ] **As an operator, I can deploy spiik to low/zero-cost hosting (investigating alternatives to Oracle VM)**
+  - [ ] Currently investigating hosting alternatives after being unable to create an Oracle account
   - [ ] Multi-arch release pipeline building and publishing `linux/arm64` images alongside `linux/amd64` to GHCR
   - [ ] Production compose stack bundling automated TLS reverse proxy (Caddy / Cloudflare SSL) to enable the browser WebRTC microphone capture API over HTTPS
 - [ ] **As an operator, my SQLite database is continuously backed up offsite without paid databases**
