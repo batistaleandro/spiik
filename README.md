@@ -57,6 +57,16 @@ npm run build        # served by the backend at /
 
 ## Run
 
+Or use `make` (targets below create the venv / install deps on first use):
+
+```bash
+make run     # build the frontend fresh, then serve API + SPA on one port
+make dev     # hot-reload dev: API on :8900 + vite dev server on :5173
+make help    # all targets (build, test, backend, frontend, clean, …)
+```
+
+Equivalent by hand:
+
 ```bash
 cd backend
 .venv/bin/python -m uvicorn app.main:app --port 8900
@@ -70,7 +80,7 @@ afterwards inference is a couple of seconds.
 For frontend development with hot reload:
 
 ```bash
-cd frontend && npm run dev   # proxies /api to localhost:8900
+make dev     # or: cd frontend && npm run dev   (proxies /api to localhost:8900)
 ```
 
 ## Docker
